@@ -1,0 +1,23 @@
+[
+    {
+        "productID": 1,
+        "categoryID": 1,
+        "brand": "nike",
+        "sizeID": 1,
+        "product_name": "SB t-shirt"
+    },
+    {
+        "productID": 2,
+        "categoryID": 1,
+        "brand": "nike",
+        "sizeID": 2,
+        "product_name": "dri-fit tank"
+    },
+    {
+        "productID": 3,
+        "categoryID": 3,
+        "brand": "adidas",
+        "sizeID": 3,
+        "product_name": "samba OG"
+    }
+]

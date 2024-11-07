@@ -1,0 +1,17 @@
+[
+    {
+        "categoryID": 1,
+        "category_name": "shirt",
+        "demographic": "M"
+    },
+    {
+        "categoryID": 2,
+        "category_name": "shirt",
+        "demographic": "W"
+    },
+    {
+        "categoryID": 3,
+        "category_name": "shoes",
+        "demographic": "K"
+    }
+]

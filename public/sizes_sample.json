@@ -1,0 +1,17 @@
+[
+    {
+        "sizeID": 1,
+        "categoryID": 1,
+        "size": "small"
+    },
+    {
+        "sizeID": 2,
+        "categoryID": 2,
+        "size": "large"
+    },
+    {
+        "sizeID": 3,
+        "categoryID": 3,
+        "size": "42"
+    }
+]

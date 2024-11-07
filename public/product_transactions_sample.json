@@ -1,0 +1,17 @@
+[
+    {
+        "productsTransactionsID": 1,
+        "transactionID": 1,
+        "productID": 1
+    },
+    {
+        "productsTransactionsID": 2,
+        "transactionID": 2,
+        "productID": 1
+    },
+    {
+        "productsTransactionsID": 3,
+        "transactionID": 3,
+        "productID": 2
+    }
+]
