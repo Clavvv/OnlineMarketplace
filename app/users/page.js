@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { FiPlus, FiEdit, FiTrash } from "react-icons/fi";
+import { FiPlus, FiEdit, FiTrash } from "react-icons/fi"
 
 export default function Register() {
 
@@ -44,25 +44,25 @@ export default function Register() {
     <form onSubmit={handleSubmit}>
       <div className="flex space-x-4 mb-4">
         <div className="flex-1">
-          <label htmlFor="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
+          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
           <input
             type="text"
             id="firstName"
             name="firstName"
-            class="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
             onChange={handleChange}
             required
           />
         </div>
 
         <div className="flex-1">
-          <label htmlFor="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
           <input
             type="text"
             id="lastName"
             name="lastName"
             onChange={handleChange}
-            class="mt-1 block w-full p-2 border border-gray-300 text-black rounded-md"
+            className="mt-1 block w-full p-2 border border-gray-300 text-black rounded-md"
             required
           />
         </div>
@@ -118,17 +118,17 @@ export default function Register() {
   </div>
 
   const editUI = <div>
-      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">Edit Account Info</h2>
+    <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">Edit Account Info</h2>
 
     <form onSubmit={handleSubmit}>
       <div className="flex space-x-4 mb-4">
         <div className="flex-1">
-          <label htmlFor="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
+          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
           <input
             type="text"
             id="firstName"
             name="firstName"
-            class="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
             onChange={handleChange}
             required
           />
@@ -198,8 +198,8 @@ export default function Register() {
 
 
   const deleteUI = <div>
-        <h2 className = 'text-2xl font-semibold text-center text-gray-800 mb-4'>Delete Account</h2>
-        <form onSubmit={handleSubmit}>
+    <h2 className='text-2xl font-semibold text-center text-gray-800 mb-4'>Delete Account</h2>
+    <form onSubmit={handleSubmit}>
 
       <div className="mb-4">
         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
