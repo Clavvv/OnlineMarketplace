@@ -226,7 +226,6 @@ export default function Register() {
         >
         </input>
       </div>
-
       <div className="mb-6">
         <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
         <input
@@ -239,7 +238,6 @@ export default function Register() {
           required
         />
       </div>
-
       <button
         type="submit"
         className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
@@ -275,8 +273,6 @@ export default function Register() {
         {toggleMode === 'edit' ? editUI : <></>}
         {toggleMode === 'create' ? createUI : <></>}
         {toggleMode === 'delete' ? deleteUI : <></>}
-
-
       </div>
     </div>
   )
