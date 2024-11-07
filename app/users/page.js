@@ -135,13 +135,13 @@ export default function Register() {
         </div>
 
         <div className="flex-1">
-          <label htmlFor="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
           <input
             type="text"
             id="lastName"
             name="lastName"
             onChange={handleChange}
-            class="mt-1 block w-full p-2 border border-gray-300 text-black rounded-md"
+            className="mt-1 block w-full p-2 border border-gray-300 text-black rounded-md"
             required
           />
         </div>
