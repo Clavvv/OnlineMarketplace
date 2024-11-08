@@ -1,41 +1,41 @@
 [
     {
-        "listingsID": 1,
+        "listingID": 1,
         "productID": 1,
         "userID": 1,
-        "listings_price": 29.99,
+        "listingPrice": "29.99",
         "status": "sold",
         "condition": "new"
     },
     {
-        "listingsID": 2,
+        "listingID": 2,
         "productID": 1,
         "userID": 1,
-        "listings_price": 29.99,
+        "listingPrice": "29.99",
         "status": "sold",
         "condition": "new"
     },
     {
-        "listingsID": 3,
+        "listingID": 3,
         "productID": 2,
         "userID": 1,
-        "listings_price": 15,
+        "listingPrice": "15.00",
         "status": "sold",
         "condition": "used"
     },
     {
-        "listingsID": 4,
+        "listingID": 4,
         "productID": 3,
         "userID": 3,
-        "listings_price": 100,
+        "listingPrice": "100.00",
         "status": "pending",
         "condition": "new"
     },
     {
-        "listingsID": 5,
+        "listingID": 5,
         "productID": 3,
         "userID": 3,
-        "listings_price": 100,
+        "listingPrice": "100.00",
         "status": "available",
         "condition": "new"
     }
