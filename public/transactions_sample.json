@@ -1,0 +1,20 @@
+[
+    {
+        "transactionID": 1,
+        "listingID": 3,
+        "amount": "42.99",
+        "transactionDate": "2024-10-01"
+    },
+    {
+        "transactionID": 2,
+        "listingID": 2,
+        "amount": "0.00",
+        "transactionDate": "2024-08-13"
+    },
+    {
+        "transactionID": 3,
+        "listingID": 5,
+        "amount": "100.00",
+        "transactionDate": "2024-10-31"
+    }
+]
