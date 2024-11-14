@@ -4,15 +4,14 @@ import ProductCard from '../components/ProductCard'
 import ProductLoadingCard from '../components/ProductLoadingCard'
 import { FiPlus, FiEdit, FiTrash, FiX } from "react-icons/fi"
 
-/* 
-need to handle isLoading skeleton stuff in this function and not in productCard
-*/
 
 export default function Products() {
 
     const [isLoading, setIsLoading] = useState(true)
     const [products, setProducts] = useState([])
     const [modalToggle, setModalToggle] = useState('')
+    const [filterIsOpen, setFilterisOpen] = useState(false)
+    const [filterSelectedOption, setFilterSelectedOption] = useState("All")
     const [formData, setFormData] = useState({
         productName: '',
         brand: '',
@@ -45,11 +44,11 @@ export default function Products() {
 
         if (formData.mode !== modalToggle) {
 
-        setFormData((prevData) => ({
-            ...prevData,
-            mode: modalToggle
-        }))
-    }
+            setFormData((prevData) => ({
+                ...prevData,
+                mode: modalToggle
+            }))
+        }
 
     }, [modalToggle])
 
@@ -65,6 +64,11 @@ export default function Products() {
             ...prevData,
             [name]: value
         }))
+    }
+
+    const toggleDropdown = () => setFilterfilterIsOpen(!filterfilterIsOpen)
+    const handleFilter = (category) => {
+        console.log('we will do something here eventually')
     }
 
     const createModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -142,7 +146,7 @@ export default function Products() {
 
     const editModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <button
+            <button
                 className="flex w-full justify-end text-gray-500 hover:text-gray-700"
                 onClick={(e) => setModalToggle('')}
             >
@@ -228,7 +232,7 @@ export default function Products() {
 
     const deleteModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <button
+            <button
                 className="flex w-full justify-end text-gray-500 hover:text-gray-700"
                 onClick={(e) => setModalToggle('')}
             >
@@ -299,12 +303,34 @@ export default function Products() {
                 <button
                     className='flex items-center justify-center w-10 h-10 mx-2 rounded-lg text-white hover:bg-red-600 transition transform hover:scale-105'
                     title='Delete account'
-                    onClick ={(e) => setModalToggle('delete')}
+                    onClick={(e) => setModalToggle('delete')}
                 >
                     <FiTrash size={20} />
                 </button>
             </div>
-            <div className='grid mt-10 ml-[220px] grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-y-6'>
+                <div className="ml-[220px] mt-6">
+                    <div className="relative inline-block">
+                        <div className="relative">
+                            <button
+                                className="block w-full px-4 py-2 bg-gray-200 rounded-lg text-black focus:outline-none"
+                                onClick={() => setFilterisOpen(!filterIsOpen)}
+                            >
+                                Filter by Category
+                            </button>
+                            {filterIsOpen && (
+                                <div className="absolute mt-2 w-full bg-white shadow-lg rounded-lg z-10">
+                                    <ul className="py-2 text-gray-700">
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => handleFilter('shirts')}>Shirts</li>
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => handleFilter('shoes')}>Shoes</li>
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => handleFilter('pants')}>Pants</li>
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => handleFilter('accessories')}>Accessories</li>
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            <div className='grid mt-10 ml-56 grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-y-6'>
                 {isLoading ? new Array(3).fill(null).map((_, index) => (
                     <ProductLoadingCard key={index} />))
 
