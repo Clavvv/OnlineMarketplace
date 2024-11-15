@@ -1,32 +1,32 @@
 [
     {
         "userID": 1,
-        "first_name": "john",
-        "last_name": "doe",
-        "phone_number": "123-456-7890",
+        "firstName": "john",
+        "lastName": "doe",
+        "phoneNumber": "123-456-7890",
         "email": "john@gmail.com",
-        "feedback_score": 5,
-        "num_items_sold": 2,
-        "num_active_listings": 0
+        "feedbackScore": 5,
+        "numItemsSold": 2,
+        "numActiveListings": 0
     },
     {
         "userID": 2,
-        "first_name": "jane",
-        "last_name": "reid",
-        "phone_number": "987-654-3210",
+        "firstName": "jane",
+        "lastName": "reid",
+        "phoneNumber": "987-654-3210",
         "email": "jane@gmail.com",
-        "feedback_score": 5,
-        "num_items_sold": 0,
-        "num_active_listings": 0
+        "feedbackScore": 5,
+        "numItemsSold": 0,
+        "numActiveListings": 0
     },
     {
         "userID": 3,
-        "first_name": "alex",
-        "last_name": "smith",
-        "phone_number": "111-222-3333",
+        "firstName": "alex",
+        "lastName": "smith",
+        "phoneNumber": "111-222-3333",
         "email": "alex@smith.biz",
-        "feedback_score": 3,
-        "num_items_sold": 1,
-        "num_active_listings": 1
+        "feedbackScore": 3,
+        "numItemsSold": 1,
+        "numActiveListings": 1
     }
 ]
