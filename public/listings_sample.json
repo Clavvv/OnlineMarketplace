@@ -36,7 +36,7 @@
         "productID": 3,
         "userID": 3,
         "listingPrice": "100.00",
-        "status": "available",
+        "status": "active",
         "condition": "new"
     }
 ]
