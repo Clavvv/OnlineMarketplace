@@ -7,6 +7,31 @@ import { FiPlus, FiEdit, FiTrash, FiX } from "react-icons/fi"
 
 export default function Products() {
 
+    /* const queryTemplate = {
+        fetchAll: string (T/F , True executes a SELECT * without filtering
+        columns: {
+            productName: string,
+            productPrice: string in the format xx.xx,
+            productCategory: string,
+            productBrand: string,
+            productSize: string,
+            demographic: string
+        },
+
+        pagination: {
+            limit: value,
+        },
+
+        sort: {
+            orderby: keyword,
+            column: value                   //this will probably need to be changed I dont like the idea of leaking the column names
+        }
+    }
+
+    */
+
+
+
     const [isLoading, setIsLoading] = useState(true)
     const [products, setProducts] = useState([])
     const [modalToggle, setModalToggle] = useState('')
@@ -21,22 +46,44 @@ export default function Products() {
     })
 
     useEffect(() => {
-        const getData = async () => {
-            await fetch('/products_sample.json')
-                .then((response) => response.json())
-                .then((jsonData) => {
 
-                    let data = jsonData.map((product) => {
-                        return {
-                            ...product,
-                            image: `/sample_product_image.png`
-                        }
-                    })
-                    setProducts(data)
-                    setIsLoading(false)
+        const getData = async () => {
+
+            const onLoadSelectQuery = {
+                fetchAll: 'True'
+            }
+
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-type': 'application/json'
+                    },
+                    body: JSON.stringify(onLoadSelectQuery)
                 })
-                .catch((error) => console.error('json no load: ', error))
+
+                if (!response.ok) {
+                    throw new Error('failed to fetch data bozo')
+                }
+
+                let returnedData = await response.json()
+                let data= returnedData.data.map((product) => {
+                    return {
+                        ...product,
+                        image: '/sample_product_image.png'
+                    }
+
+                });
+                setProducts(data)
+                setIsLoading(false)
+            } catch (error) {
+                console.log('something went wrong', error)
+            }
+
         }
+
+
+
         getData()
     }, [])
 
