@@ -6,8 +6,9 @@ export async function sendQuery(query:string) {
 
     const connString = process.env.DATABASE_URL
 
+
     if (!connString) {
-        return
+        throw new Error("Missing Database connection data")
     }
     
     const sql = neon(connString);
