@@ -4,32 +4,53 @@ import ProductCard from '../components/ProductCard'
 import ProductLoadingCard from '../components/ProductLoadingCard'
 import { FiPlus, FiEdit, FiTrash, FiX } from "react-icons/fi"
 
+const sizeOptions = {
+    shirt: ["XS", "S", "M", "L", "XL", "XXL"],
+    shoes: ["5", "6", "7", "8", "9", "10", "11", "12", "13"],
+    pants: ["28", "30", "32", "34", "36", "38", "40"]
+  }
+
 
 export default function Products() {
 
-    /* const queryTemplate = {
-        fetchAll: string (T/F , True executes a SELECT * without filtering
-        columns: {
-            productName: string,
-            productPrice: string in the format xx.xx,
-            productCategory: string,
-            productBrand: string,
-            productSize: string,
-            demographic: string
-        },
-
-        pagination: {
-            limit: value,
-        },
-
-        sort: {
-            orderby: keyword,
-            column: value                   //this will probably need to be changed I dont like the idea of leaking the column names
+    /*
+    const queryTemplate = {
+        action: 'insert/select/delete/update'<string>,
+        table: is implied,
+        columns: [col1, col2, col3] can use aliases and then map them in route,
+        filters: {
+            conditions: [
+                {column1: value, operator: is/=/!=, value= value},
+            ],
+            logic: "AND/OR"
         }
     }
 
-    */
+    const queryTemplateUpdate = {
+        action: 'update',
+        row: PK_val
+        columns: [col1, col2, col3],
+        values: [val1, val2, val3],
+    }
 
+
+    const query = {
+        action: 'SELECT',
+        columns: [productName, size, price],
+        filters:  {
+            conditions: [
+                {column1: category, operator: =, value= 'shirts'}
+            ]
+        }
+    }
+
+    const insertQuery = {
+
+        action: 'INSERT',
+        columns: [... columns],
+        values: [...values]
+    }
+    */
 
 
     const [isLoading, setIsLoading] = useState(true)
@@ -37,30 +58,23 @@ export default function Products() {
     const [modalToggle, setModalToggle] = useState('')
     const [filterIsOpen, setFilterisOpen] = useState(false)
     const [filterSelectedOption, setFilterSelectedOption] = useState("All")
+    const [sizeOptionsForSelectedCategory, setSizeOptionsForSelectedCategory] = useState([])
     const [formData, setFormData] = useState({
         productName: '',
         brand: '',
         category: '',
         productID: '',
-        mode: ''
+        mode: '',
+        size: '',
+        demographic: '',
     })
 
     useEffect(() => {
 
         const getData = async () => {
 
-            const onLoadSelectQuery = {
-                fetchAll: 'True'
-            }
-
             try {
-                const response = await fetch('/api/products', {
-                    method: 'POST',
-                    headers: {
-                        'Content-type': 'application/json'
-                    },
-                    body: JSON.stringify(onLoadSelectQuery)
-                })
+                const response = await fetch('/api/products')
 
                 if (!response.ok) {
                     throw new Error('failed to fetch data bozo')
@@ -72,25 +86,21 @@ export default function Products() {
                         ...product,
                         image: '/sample_product_image.png'
                     }
+                })
 
-                });
                 setProducts(data)
                 setIsLoading(false)
+
             } catch (error) {
                 console.log('something went wrong', error)
             }
-
         }
-
-
-
         getData()
     }, [])
 
     useEffect(() => {
 
         if (formData.mode !== modalToggle) {
-
             setFormData((prevData) => ({
                 ...prevData,
                 mode: modalToggle
@@ -99,10 +109,27 @@ export default function Products() {
 
     }, [modalToggle])
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+
+        if (formData.category) {
+            const category = formData.category.toLowerCase()
+            setSizeOptionsForSelectedCategory(sizeOptions[category] || [])
+            setFormData(prev => ({ ...prev, size: ""}))
+        }
+
+    }, [formData.category])
+
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log("Product Data: ", formData)
+        if (formData.mode === 'delete') {
+            handleDeleteProduct()
+        } else if (formData.mode === 'create') {
+            handleAddProduct()
+    } else if (formData.mode === 'edit'){
+        handleEditProduct()
+
     }
+}
 
     const handleChange = (e) => {
         e.preventDefault()
@@ -116,6 +143,93 @@ export default function Products() {
     const toggleDropdown = () => setFilterfilterIsOpen(!filterfilterIsOpen)
     const handleFilter = (category) => {
         console.log('we will do something here eventually')
+    }
+
+    const handleAddProduct = () => {
+
+        const response = fetch('/api/products', {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                const newProductWithImage = {
+                    ...data[0],
+                    image: '/sample_product_image.png'
+                }
+                
+                setProducts(prevData => {
+                    return [...prevData, newProductWithImage]
+                })
+            }).catch(error => {
+                console.error('query failed', error)
+            })
+    }
+
+    const handleDeleteProduct = async () => {
+
+        let requestJson = {
+                action: formData.mode,
+                product_id: formData.productID
+        }
+
+        const response = fetch('/api/products', {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(requestJson)
+        }).then(response => {
+
+            if (!response.ok) {
+                throw new Error('failed to delete product')
+            }
+            
+            return response.json()
+        }).then(() => {
+
+            setProducts(prevProducts => prevProducts.filter(product => product.product_id != formData.productID))
+        })
+    }
+
+    const handleEditProduct = async () => {
+
+        const response = await fetch('/api/products', {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+
+        const data = await response.json()
+
+        const updatedProduct = {
+            ...data,
+            image: '/sample_product_image.png'
+        }
+
+        console.log(updatedProduct)
+
+        setProducts(prevProducts => {
+            return prevProducts.map(product => {
+                console.log(product)
+                if (product.product_id === updatedProduct.product_id) {
+
+                    return updatedProduct
+                }
+                return product
+            })
+
+        })
+
+
+
+
     }
 
     const createModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -171,10 +285,51 @@ export default function Products() {
                         onChange={handleChange}
                         className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
                         required
-                    >
-                        <option value="Shirts">Shirts</option>
-                        <option value="Shoes">Shoes</option>
-                        <option value="Pants">Pants</option>
+                    >   
+                        <option value="" disabled>choose category</option>
+                        <option value="shirt">Shirts</option>
+                        <option value="shoes">Shoes</option>
+                        <option value="pants">Pants</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="size" className="block text-sm font-medium text-gray-700">
+                        Size
+                    </label>
+                    <select
+                        id="size"
+                        name="size"
+                        value={formData.size}
+                        onChange={handleChange}
+                        className="mt-1 mb-5 block w-full p-2 border border-gray-300 rounded-md text-black"
+                        required
+                        disabled={!formData.category}
+                    >   
+                        <option value="" disabled>choose a size</option>
+                        {sizeOptionsForSelectedCategory.map((size, index) => (
+                            <option key={index} value={size}>{size}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label htmlFor="size" className="block text-sm font-medium text-gray-700">
+                        Demographic
+                    </label>
+                    <select
+                        id="demographic"
+                        name="demographic"
+                        value={formData.demographic}
+                        onChange={handleChange}
+                        className="mt-1 mb-5 block w-full p-2 border border-gray-300 rounded-md text-black"
+                        required
+                        disabled={!formData.size}
+                    >   
+                        <option value="" disabled>choose a demographic</option>
+                        <option value="W">Women</option>
+                        <option value="M">Men</option>
+                        <option value="K">Children</option>
+
                     </select>
                 </div>
 
@@ -385,7 +540,7 @@ export default function Products() {
                         <div
                             className='w-full'
                             key={index}
-                            id={index === products.length - 1 ? 'last-product' : ''}
+                            id = {product.id}
                         >
                             <ProductCard product={product} />
                         </div>
