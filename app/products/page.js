@@ -125,6 +125,9 @@ export default function Products() {
             handleDeleteProduct()
         } else if (formData.mode === 'create') {
             handleAddProduct()
+    } else if (formData.mode === 'edit'){
+        handleEditProduct()
+
     }
 }
 
@@ -190,8 +193,40 @@ export default function Products() {
         }).then(() => {
 
             setProducts(prevProducts => prevProducts.filter(product => product.product_id != formData.productID))
+        })
+    }
+
+    const handleEditProduct = async () => {
+
+        const response = await fetch('/api/products', {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+
+        const data = await response.json()
+
+        const updatedProduct = {
+            ...data,
+            image: '/sample_product_image.png'
+        }
+
+        console.log(updatedProduct)
+
+        setProducts(prevProducts => {
+            return prevProducts.map(product => {
+                console.log(product)
+                if (product.product_id === updatedProduct.product_id) {
+
+                    return updatedProduct
+                }
+                return product
+            })
 
         })
+
 
 
 
