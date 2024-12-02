@@ -3,12 +3,9 @@ import { sendQuery } from "../../../utils/db_connector"
 
 const columnMappings: Record<string, string> = {
 
-    listingID: 'listing_ID',
-    productID: 'product_ID',
-    userID: 'userID',
-    listingPrice: 'listing_price',
-    status: 'status',
-    condition: 'item_condition'
+    categoryID: 'category_ID',
+    categoryName: 'category_name',
+    demographic: 'demographic'
 }
 
 const categoryIDMappings: Record<string, number> = {
@@ -26,7 +23,7 @@ const categoryIDMappings: Record<string, number> = {
 
 export async function GET() {
 
-    let query = `SELECT * FROM listings ORDER BY listing_id ASC;`
+    let query = `SELECT * FROM categories;`
     const responseData = await sendQuery(query)
     return new Response(JSON.stringify({ data: responseData }), {
         status: 200,
@@ -36,25 +33,22 @@ export async function GET() {
 
 export async function PUT(request: Request) {
 
-    const { listingID, productID, userID, listingPrice, status, condition } = await request.json()
+    const { categoryID, categoryName, demographic } = await request.json()
 
     const updateQuery = `
-                        UPDATE listings 
+                        UPDATE categories 
                         SET 
-                        product_id = '${productID}',
-                        user_id = '${userID}',
-                        listing_price = '${listingPrice}',
-                        status = '${status}',
-                        item_condition = '${condition}' 
+                        demographic = '${demographic}',
+                        category_name = ${categoryName}
                         WHERE
-                        listing_id = ${listingID}
+                        category_id = ${categoryID}
                         RETURNING *;`
 
     try {
         const databaseResponse = await sendQuery(updateQuery)
-        const updatedListing = databaseResponse[0]
+        const updatedCategory = databaseResponse[0]
 
-        return new Response(JSON.stringify(updatedListing), {
+        return new Response(JSON.stringify(updatedCategory), {
             status: 200,
             headers: {
                 'Content-type': 'application/json'
@@ -63,15 +57,16 @@ export async function PUT(request: Request) {
 
 
     } catch (error) {
-        console.error("Error updating listing:", error);
+        console.error("Error updating category:", error);
     }
 
     return new Response(JSON.stringify({ 'test': 'not real response' }))
 }
 
 export async function DELETE(request: Request) {
+
     const queryData = await request.json()
-    let query = `DELETE FROM listings WHERE listing_id = ${queryData.listing_id}`
+    let query = `DELETE FROM categories WHERE category_id = ${queryData.category_id}`
     const databaseResponse = await sendQuery(query)
 
     return new Response(JSON.stringify({ data: databaseResponse }), {
@@ -83,13 +78,27 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
 
     const queryData = await request.json()
-    const { productID, userID, listingPrice, status, condition } = queryData
-    console.log(queryData)
+    const { categoryID, categoryName, demographic } = queryData
+    // const category_id = categoryIDMappings[category + demographic]
+
+    // const sizeQuery = `
+    //     SELECT size_id FROM sizes
+    //         WHERE category_id = ${category_id}
+    //         AND size = '${size}'
+    //     LIMIT 1;`
 
     try {
 
-        const insertQuery = `INSERT INTO listings (product_id, user_id, listing_price, status, item_condition)
-                            VALUES ('${productID}', '${userID}', ${listingPrice}, '${status}', '${condition}')
+        // const sizeResponse = await sendQuery(sizeQuery)
+        // const { size_id } = sizeResponse[0]
+        // if (!size_id) {
+        //     return new Response(JSON.stringify({ error: 'given size was not valid for product' }), { status: 404 })
+        // }
+
+        console.log(categoryName, demographic, categoryID)
+
+        const insertQuery = `INSERT INTO categories (category_name, demographic, category_ID)
+                            VALUES ('${product_name}', '${demographic}', ${categoryID})
                             RETURNING *;`
 
         const databaseResponse = await sendQuery(insertQuery)

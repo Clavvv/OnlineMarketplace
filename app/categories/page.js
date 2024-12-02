@@ -7,26 +7,37 @@ export default function Categories() {
     const [categories, setCategories] = useState([])
     const [modalToggle, setModalToggle] = useState(false)
     const [formData, setFormData] = useState({
-        sizeID: '',
+        categoryID: '',
         categoryName: '',
         demographic: '',
-        categoryID: '',
         mode: ''
     })
 
 
     useEffect(() => {
-
         const getData = async () => {
-            await fetch('/category_sample.json')
-                .then((response) => response.json())
-                .then((jsonData) => {
-                    setCategories(jsonData)
+
+            try {
+                const response = await fetch('/api/categories')
+
+                if (!response.ok) {
+                    throw new Error('failed to fetch data bozo')
+                }
+
+                let returnedData = await response.json()
+                let data= returnedData.data.map((category) => {
+                    return {
+                        ...category,
+                    }
                 })
-                .catch((error) => console.error('json no load: ', error))
+
+                setCategories(data)
+
+            } catch (error) {
+                console.log('something went wrong', error)
+            }
         }
         getData()
-
     }, [])
 
     useEffect(() => {
@@ -41,6 +52,18 @@ export default function Categories() {
 
     }, [modalToggle])
 
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        if (formData.mode === 'delete') {
+            handleDeleteCategory()
+        } else if (formData.mode === 'create') {
+            handleAddCategory()
+    } else if (formData.mode === 'edit') {
+        handleEditCategory()
+
+    }
+}
+
     const handleChange = (e) => {
         e.preventDefault()
         const { name, value } = e.target
@@ -50,18 +73,86 @@ export default function Categories() {
         }))
     }
 
-    const handleDelete = () => {
-        console.log('deleting...')
+    const handleDeleteCategory = () => {
+
+        let requestJson = {
+                action: formData.mode,
+                product_id: formData.productID
+        }
+
+        const response = fetch('/api/categories', {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(requestJson)
+        }).then(response => {
+
+            if (!response.ok) {
+                throw new Error('failed to delete category')
+            }
+
+            return response.json()
+        }).then(() => {
+
+            setCategories(prevCategories => prevCategories.filter(category =>
+                category.categoryID != formData.categoryID))
+        })
     }
 
-    const handleEdit = () => {
-        console.log('editing...')
+    const handleEditCategory = async () => {
+
+        const response = await fetch('/api/categories', {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+
+        const data = await response.json()
+
+        const updatedCategory = {
+            ...data
+        }
+
+        console.log(updatedCategory)
+
+        setCategories(prevCategories => {
+            return prevCategories.map(category => {
+                console.log(category)
+                if (category.categoryID === updatedCategory.categoryID) {
+
+                    return updatedCategory
+                }
+                return category
+            })
+
+        })
     }
 
-    const handleAdd = (e) => {
-        e.preventDefault()
-        console.log('Category Data: ', formData)
+    const handleAddCategory = () => {
 
+        const response = fetch('/api/categories', {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                const newCategory = {
+                    ...data[0]
+                }
+
+                setCategories(prevData => {
+                    return [...prevData, newCategory]
+                })
+            }).catch(error => {
+                console.error('query failed', error)
+            })
     }
 
     const newSizeModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -75,7 +166,7 @@ export default function Categories() {
             <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
                 Add New Category
             </h2>
-            <form onSubmit={handleAdd}>
+            <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                     <label htmlFor="demographic" className="block text-sm font-medium text-gray-700">
                         Demographic
@@ -154,14 +245,22 @@ export default function Categories() {
             </thead>
             <tbody>
               {categories.map((category) => (
-                <tr key={category.categoryID} className="border-b">
-                  <td className="px-4 py-2">{category.categoryID}</td>
+                <tr key={category.category_id} className="border-b">
+                  <td className="px-4 py-2">{category.category_id}</td>
                   <td className="px-4 py-2">{category.category_name}</td>
                   <td className="px-4 py-2">{category.demographic}</td>
                   <td>
                   <button
                     className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
-                    onClick={() => handleEdit(category.categoryID)}
+                    onClick={(e) => {
+                        setFormData({
+                            categoryID: category.category_id,
+                            categoryName: category.category_name,
+                            demographic: category.demographic,
+                            mode: 'edit',
+                        });
+                        setModalToggle(true);
+                      }}
                     title="Edit"
                   >
                     <FiEdit />
@@ -170,7 +269,7 @@ export default function Categories() {
                   <td>
                   <button
                     className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                    onClick={() => handleDelete(category.categoryID)}
+                    onClick={() => handleDeleteCategory(category.categoryID)}
                     title="Delete"
                   >
                     <FiTrash />
