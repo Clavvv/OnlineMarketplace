@@ -187,9 +187,10 @@ export default function ProductsTransactions() {
                     >
                         <FiPlus/>
                     </button>
+                    <div className="bg-gray-100 text-red-500">**REFRESH PAGE AFTER TABLE CHANGE FOR NOW**</div>
                 </div>
-                    <table className="min-w-full table-auto text-sm">
-                        <thead>
+                <table className="min-w-full table-auto text-sm">
+                <thead>
                         <tr className="bg-gray-300 text-black">
                             <th className="px-4 py-2 text-left">Products-Transactions ID</th>
                             <th className="px-4 py-2 text-left">Transaction ID</th>

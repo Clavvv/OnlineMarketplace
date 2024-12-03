@@ -205,12 +205,13 @@ export default function Transactions() {
                 <div className='flex flex-row'>
                     <h3>Transactions</h3>
                     <button
-                    className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
-                    onClick={handleAdd}
-                    title="Add"
+                        className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
+                        onClick={handleAdd}
+                        title="Add"
                     >
-                    <FiPlus/>
+                        <FiPlus/>
                     </button>
+                    <div className="bg-gray-100 text-red-500">**REFRESH PAGE AFTER TABLE CHANGE FOR NOW**</div>
                 </div>
                 <table className="min-w-full table-auto text-sm">
                     <thead>
