@@ -98,7 +98,7 @@ export async function POST(request: Request) {
         console.log(categoryName, demographic, categoryID)
 
         const insertQuery = `INSERT INTO categories (category_name, demographic, category_ID)
-                            VALUES ('${product_name}', '${demographic}', ${categoryID})
+                            VALUES ('${categoryName}', '${demographic}', ${categoryID})
                             RETURNING *;`
 
         const databaseResponse = await sendQuery(insertQuery)
