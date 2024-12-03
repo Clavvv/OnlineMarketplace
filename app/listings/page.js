@@ -32,31 +32,35 @@ export default function Listings() {
         fetchListings();
     }, []);
 
-    const handleDelete = async (listingID) => {
-    try {
-        console.log('Deleting listing with ID:', listingID);
+    const handleDelete = (listingID) => {
+
         let requestJson = {
-                listing_id: listingID
-        }
-        const response = await fetch(`/api/listings`, {
+            listing_id: listingID
+        };
+    
+        fetch('/api/listings', {
             method: 'DELETE',
             headers: {
                 'Content-type': 'application/json',
             },
             body: JSON.stringify(requestJson)
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to delete listing');
-        }
-
-        console.log('Listing deleted successfully');
-        setListings(listings.filter(listing => listing.listing_id !== listingID));
-    } catch (error) {
-        console.error('Error deleting listing:', error);
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to delete listing')
+                    })
+                }
+                return response.json()
+            })
+            .then(() => {
+                console.log('Listing deleted successfully');
+                setListings(prevListings => prevListings.filter(listing => listing.listing_id !== listingID));
+            })
+            .catch((error) => {
+                console.error('Error deleting listing:', error);
+            })
     }
-};
 
     const handleEdit = (listing) => {
         setFormData({
@@ -93,51 +97,72 @@ export default function Listings() {
         }));
     };
 
-    const handleSaveEdit = async (e) => {
+    const handleSaveEdit =async  (e) => {
         e.preventDefault();
-        try {
-            const response = await fetch(`/api/listings`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-            if (!response.ok) {
-                throw new Error('Failed to update listing');
-            }
-            const updatedListing = await response.json();
-            setListings(listings.map(listing =>
-                listing.listingID === formData.listingID ? updatedListing : listing
-            ));
-            setModalToggle(false);
-        } catch (error) {
-            console.error('Error updating listing:', error);
-        }
-    };
+    
+        const response = await fetch('/api/listings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to update listing');
+                    });
+                }
+                return response.json();
+            })
+            .then((updatedListing) => {
+                console.log('updated listings: ', updatedListing)
+                setListings(prevListings => {
+                    return prevListings.map(listing => {
+                        if (listing.listing_id === updatedListing.listing_id) {
+                            return updatedListing
+                        }
+
+                        return listing
+                    })
+                })
+                setModalToggle(false);
+            })
+            .catch((error) => {
+                console.error('Error updating listing:', error);
+            })
+    }
 
     const handleSaveAdd = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await fetch('/api/listings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    productID: formData.productID,
-                    userID: formData.userID,
-                    listingPrice: formData.listingPrice,
-                    status: formData.status,
-                    condition: formData.condition,
-                }),
-            });
-            if (!response.ok) {
-                throw new Error('Failed to add listing');
-            }
-            const newListing = await response.json();
-            setListings([...listings, newListing]); // The new listing includes the generated listingID
-            setModalToggle(false);
-        } catch (error) {
-            console.error('Error adding listing:', error);
-        }
-};
+        e.preventDefault()
+        setModalToggle(false);
+    
+        fetch('/api/listings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                productID: formData.productID,
+                userID: formData.userID,
+                listingPrice: formData.listingPrice,
+                status: formData.status,
+                condition: formData.condition,
+            }),
+        }).then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to add listing');
+                    })
+                }
+                return response.json(); //returns new listing from the database
+            }).then((newListing) => {
+                setListings(prevListings => {
+                    const updatedListings = [...prevListings, newListing[0]]
+                    return updatedListings
+                })
+
+            })
+            .catch((error) => {
+                console.error('Error adding listing:', error);
+            })
+    }
 
     const listingModal = (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

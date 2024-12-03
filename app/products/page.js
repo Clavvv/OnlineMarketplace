@@ -217,7 +217,6 @@ export default function Products() {
 
         setProducts(prevProducts => {
             return prevProducts.map(product => {
-                console.log(product)
                 if (product.product_id === updatedProduct.product_id) {
 
                     return updatedProduct
