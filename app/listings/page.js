@@ -60,12 +60,12 @@ export default function Listings() {
 
     const handleEdit = (listing) => {
         setFormData({
-            listingID: listing.listing_id, // Ensure correct key matches your backend response
+            listingID: listing.listing_id,
             productID: listing.product_id,
             userID: listing.user_id,
             listingPrice: listing.listing_price,
             status: listing.status,
-            condition: listing.item_condition, // Match these with your API's field names
+            condition: listing.item_condition,
         });
         setIsEditing(true);
         setModalToggle(true);

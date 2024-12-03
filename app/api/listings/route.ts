@@ -11,18 +11,6 @@ const columnMappings: Record<string, string> = {
     condition: 'item_condition'
 }
 
-const categoryIDMappings: Record<string, number> = {
-    "shirtK": 1,
-    "shirtM": 2,
-    "shirtW": 3,
-    "shoesK": 4,
-    "shoesM": 5,
-    "shoesW": 6,
-    "pantsK": 7,
-    "pantsM": 8,
-    "pantsW": 9
-}
-
 
 export async function GET() {
 
