@@ -16,7 +16,7 @@ export default function Home() {
     the graph is automatically updated
     */
     const parent = document.getElementById('btnParent')
-    const tables = ['Products', 'Users', 'Transactions', 'Categories', 'Sizes', 'Listings', 'Product-Transaction'];
+    const tables = ['Products', 'Users', 'Transactions', 'Categories', 'Sizes', 'Listings', 'Product-Transactions'];
     tables.forEach((tableName) => {
       const button = document.createElement('button')
       button.textContent = tableName
