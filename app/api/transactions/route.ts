@@ -1,20 +1,9 @@
 import { NextResponse } from "next/server"
 import { sendQuery } from "../../../utils/db_connector"
 
-const columnMappings: Record<string, string> = {
-
-    listingID: 'listing_ID',
-    productID: 'product_ID',
-    userID: 'userID',
-    listingPrice: 'listing_price',
-    status: 'status',
-    condition: 'item_condition'
-}
-
-
 export async function GET() {
 
-    let query = `SELECT * FROM listings ORDER BY listing_id ASC;`
+    let query = `SELECT * FROM transactions ORDER BY transaction_id ASC;`
     const responseData = await sendQuery(query)
     return new Response(JSON.stringify({ data: responseData }), {
         status: 200,
@@ -24,25 +13,24 @@ export async function GET() {
 
 export async function PUT(request: Request) {
 
-    const { listingID, productID, userID, listingPrice, status, condition } = await request.json()
+    const { transactionID, buyerID, sellerID, listingID, transactionDate } = await request.json()
 
     const updateQuery = `
-                        UPDATE listings 
+                        UPDATE transactions 
                         SET 
-                        product_id = '${productID}',
-                        user_id = '${userID}',
-                        listing_price = '${listingPrice}',
-                        status = '${status}',
-                        item_condition = '${condition}' 
+                        buyer_id = '${buyerID}',
+                        seller_id = '${sellerID}',
+                        listing_id = '${listingID}',
+                        transaction_date = '${transactionDate}' 
                         WHERE
-                        listing_id = ${listingID}
+                        transaction_id = ${transactionID}
                         RETURNING *;`
 
     try {
         const databaseResponse = await sendQuery(updateQuery)
-        const updatedListing = databaseResponse[0]
+        const updatedTransaction = databaseResponse[0]
 
-        return new Response(JSON.stringify(updatedListing), {
+        return new Response(JSON.stringify(updatedTransaction), {
             status: 200,
             headers: {
                 'Content-type': 'application/json'
@@ -51,7 +39,7 @@ export async function PUT(request: Request) {
 
 
     } catch (error) {
-        console.error("Error updating listing:", error);
+        console.error("Error updating transaction:", error);
     }
 
     return new Response(JSON.stringify({ 'test': 'not real response' }))
@@ -59,7 +47,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     const queryData = await request.json()
-    let query = `DELETE FROM listings WHERE listing_id = ${queryData.listing_id}`
+    let query = `DELETE FROM transactions WHERE transaction_id = ${queryData.transaction_id}`
     const databaseResponse = await sendQuery(query)
 
     return new Response(JSON.stringify({ data: databaseResponse }), {
@@ -71,13 +59,13 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
 
     const queryData = await request.json()
-    const { productID, userID, listingPrice, status, condition } = queryData
+    const { buyerID, sellerID, listingID, transactionDate } = queryData
     console.log(queryData)
 
     try {
 
-        const insertQuery = `INSERT INTO listings (product_id, user_id, listing_price, status, item_condition)
-                            VALUES ('${productID}', '${userID}', ${listingPrice}, '${status}', '${condition}')
+        const insertQuery = `INSERT INTO transactions (buyer_id, seller_id, listing_id, transaction_date)
+                            VALUES ('${buyerID}', '${sellerID}', '${listingID}', '${transactionDate}')
                             RETURNING *;`
 
         const databaseResponse = await sendQuery(insertQuery)

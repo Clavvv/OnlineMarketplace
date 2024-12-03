@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import {FiTrash, FiEye, FiEdit, FiX, FiPlus} from "react-icons/fi";
 
 export default function ProductsTransactions() {
-    const [productsTransactions, setProductsTransactions] = useState([]);
+    const [pt, setPT] = useState([]);
     const [modalToggle, setModalToggle] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -14,34 +14,60 @@ export default function ProductsTransactions() {
     });
 
     useEffect(() => {
-        const getData = async () => {
-            await fetch('/product_transactions_sample.json')
-                .then((response) => response.json())
-                .then((jsonData) => {
-                    setProductsTransactions(jsonData);
-                })
-                .catch((error) => console.error('Failed to load products transactions: ', error));
-        }
-        getData();
+        const fetchPT = async () => {
+            try {
+                const response = await fetch('/api/product_transactions');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch entries');
+                }
+                const { data } = await response.json();
+                setPT(data);
+            } catch (error) {
+                console.error('Error fetching entries:', error);
+            }
+        };
+        fetchPT();
     }, []);
 
-    const handleDelete = (productsTransactionsID) => {
-        setProductsTransactions(productsTransactions.filter(pt => pt.productsTransactionsID !== productsTransactionsID));
-    };
+    const handleDelete = async (ptID) => {
+    try {
+        console.log('Deleting entry with ID:', ptID);
+        let requestJson = {
+                pt_id: ptID
+        }
+        const response = await fetch(`/api/product_transactions`, {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(requestJson)
+        });
 
-    const handleEdit = (productTransaction) => {
-        setFormData(productTransaction);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to delete entry');
+        }
+
+        console.log('Entry deleted successfully');
+        setPT(pt.filter(productTransaction => productTransaction.pt_id !== ptID));
+    } catch (error) {
+        console.error('Error deleting entry:', error);
+    }
+};
+
+    const handleEdit = (pt) => {
+        setFormData({
+            productsTransactionsID: pt.product_transaction_id,
+            transactionID: pt.transaction_id,
+            productID: pt.product_id
+        });
         setIsEditing(true);
         setModalToggle(true);
     };
 
     const handleAdd = () => {
-        const maxID =
-            productsTransactions.reduce((max, productsTransactions) =>
-            Math.max(max, parseInt(productsTransactions.productsTransactionsID, 10)), 0);
-
         setFormData({
-            productsTransactionsID: String(maxID + 1),
+            productsTransactionsID: '',
             transactionID: '',
             productID: ''
         });
@@ -58,19 +84,50 @@ export default function ProductsTransactions() {
         }));
     };
 
-    const handleSaveEdit = (e) => {
+    const handleSaveEdit = async (e) => {
         e.preventDefault();
-        setProductsTransactions(productsTransactions.map(pt => 
-            pt.productsTransactionsID === formData.productsTransactionsID ? formData : pt
-        ));
-        setModalToggle(false);
+        try {
+            const response = await fetch(`/api/product_transactions`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update entry');
+            }
+            const updatedPT = await response.json();
+            setPT(pt.map(productTransaction =>
+                productTransaction.productsTransactionsID === formData.productsTransactionsID
+                    ? updatedPT : productTransaction
+            ));
+            setModalToggle(false);
+        } catch (error) {
+            console.error('Error updating listing:', error);
+        }
     };
 
-    const handleSaveAdd = (e) => {
+    const handleSaveAdd = async (e) => {
         e.preventDefault();
-        setProductsTransactions([...productsTransactions, formData]);
-        setModalToggle(false);
-    };
+        try {
+            const response = await fetch('/api/product_transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    productsTransactionsID: formData.productsTransactionsID,
+                    transactionID: formData.transactionID,
+                    productID: formData.productID,
+                }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to add entry');
+            }
+            const newPT = await response.json();
+            setPT([...pt, newPT]); // The new listing includes the generated listingID
+            setModalToggle(false);
+        } catch (error) {
+            console.error('Error adding listing:', error);
+        }
+};
 
     const productTransactionModal = (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -130,9 +187,10 @@ export default function ProductsTransactions() {
                     >
                         <FiPlus/>
                     </button>
+                    <div className="bg-gray-100 text-red-500">**REFRESH PAGE AFTER TABLE CHANGE FOR NOW**</div>
                 </div>
-                    <table className="min-w-full table-auto text-sm">
-                        <thead>
+                <table className="min-w-full table-auto text-sm">
+                <thead>
                         <tr className="bg-gray-300 text-black">
                             <th className="px-4 py-2 text-left">Products-Transactions ID</th>
                             <th className="px-4 py-2 text-left">Transaction ID</th>
@@ -142,11 +200,11 @@ export default function ProductsTransactions() {
                         </tr>
                         </thead>
                         <tbody>
-                        {productsTransactions.map((pt) => (
-                            <tr key={pt.productsTransactionsID} className="border-b">
-                                <td className="px-4 py-2">{pt.productsTransactionsID}</td>
-                                <td className="px-4 py-2">{pt.transactionID}</td>
-                                <td className="px-4 py-2">{pt.productID}</td>
+                        {pt.map((pt) => (
+                            <tr key={pt.product_transaction_id} className="border-b">
+                                <td className="px-4 py-2">{pt.product_transaction_id}</td>
+                                <td className="px-4 py-2">{pt.transaction_id}</td>
+                                <td className="px-4 py-2">{pt.product_id}</td>
                                 <td>
                                     <button
                                         className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
@@ -159,7 +217,7 @@ export default function ProductsTransactions() {
                                 <td>
                                     <button
                                         className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                                        onClick={() => handleDelete(pt.productsTransactionsID)}
+                                        onClick={() => handleDelete(pt.product_transaction_id)}
                                         title="Delete"
                                     >
                                         <FiTrash/>
