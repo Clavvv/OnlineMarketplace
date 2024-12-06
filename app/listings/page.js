@@ -265,7 +265,6 @@ export default function Listings() {
                     >
                         <FiPlus/>
                     </button>
-                    <div className="bg-gray-100 text-red-500">**REFRESH PAGE AFTER TABLE CHANGE FOR NOW**</div>
                 </div>
                     <table className="min-w-full table-auto text-sm">
                         <thead>

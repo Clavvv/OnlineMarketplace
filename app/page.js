@@ -20,7 +20,7 @@ export default function Home() {
     tables.forEach((tableName) => {
       const button = document.createElement('button')
       button.textContent = tableName
-      button.className = 'm-2 px-3 text-lg'
+      button.className = 'm-5 px-5 text-lg place-self-center h-20 transition-transform duration-300 ease-in-out hover:scale-110'
       button.onclick = () => {
         router.push(`/${tableName.toLowerCase()}`)
       }

@@ -200,11 +200,11 @@ export default function ProductsTransactions() {
                         </tr>
                         </thead>
                         <tbody>
-                        {pt.map((pt) => (
+                        {pt.map((obj) => (
                             <tr key={pt.product_transaction_id} className="border-b">
-                                <td className="px-4 py-2">{pt.product_transaction_id}</td>
-                                <td className="px-4 py-2">{pt.transaction_id}</td>
-                                <td className="px-4 py-2">{pt.product_id}</td>
+                                <td className="px-4 py-2">{obj.product_transaction_id}</td>
+                                <td className="px-4 py-2">{obj.transaction_id}</td>
+                                <td className="px-4 py-2">{obj.product_id}</td>
                                 <td>
                                     <button
                                         className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
