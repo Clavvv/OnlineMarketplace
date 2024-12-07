@@ -9,42 +9,72 @@ export default function Transactions() {
     const [isAdding, setIsAdding] = useState(false);
     const [formData, setFormData] = useState({
         transactionID: '',
+        buyerID: '',
+        sellerID: '',
         listingID: '',
-        amount: '',
         transactionDate: ''
     });
 
     useEffect(() => {
-        const getData = async () => {
-            await fetch('/transactions_sample.json')
-                .then((response) => response.json())
-                .then((jsonData) => {
-                    setTransactions(jsonData);
-                })
-                .catch((error) => console.error('Failed to load transactions: ', error));
-        }
-        getData();
+        const fetchTransactions = async () => {
+            try {
+                const response = await fetch('/api/transactions');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch transactions');
+                }
+                const { data } = await response.json();
+                setTransactions(data);
+            } catch (error) {
+                console.error('Error fetching transactions:', error);
+            }
+        };
+        fetchTransactions();
     }, []);
 
-    const handleDelete = (transactionID) => {
-        setTransactions(transactions.filter(transaction => transaction.transactionID !== transactionID));
-    };
+    const handleDelete = async (transactionID) => {
+    try {
+        console.log('Deleting transaction with ID:', transactionID);
+        let requestJson = {
+                transaction_id: transactionID
+        }
+        const response = await fetch(`/api/transactions`, {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(requestJson)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to delete transaction');
+        }
+
+        console.log('Transaction deleted successfully');
+        setTransactions(transactions.filter(transaction => transaction.transaction_id !== transactionID));
+    } catch (error) {
+        console.error('Error deleting listing:', error);
+    }
+};
 
     const handleEdit = (transaction) => {
-        setFormData(transaction);
+        setFormData({
+            transactionID: transaction.transaction_id,
+            buyerID: transaction.buyer_id,
+            sellerID: transaction.seller_id,
+            listingID: transaction.listing_id,
+            transactionDate: transaction.transaction_date,
+        });
         setIsEditing(true);
         setModalToggle(true);
     };
 
     const handleAdd = () => {
-        const maxID =
-            transactions.reduce((max, transactions) =>
-            Math.max(max, parseInt(transactions.transactionID, 10)), 0);
-
         setFormData({
-            transactionID: String(maxID + 1),
+            transactionID: '',
+            buyerID: '',
+            sellerID: '',
             listingID: '',
-            amount: '',
             transactionDate: '',
         });
         setIsAdding(true);
@@ -60,19 +90,50 @@ export default function Transactions() {
         }));
     };
 
-    const handleSaveEdit = (e) => {
+    const handleSaveEdit = async (e) => {
         e.preventDefault();
-        setTransactions(transactions.map(transaction => 
-            transaction.transactionID === formData.transactionID ? formData : transaction
-        ));
-        setModalToggle(false);
+        try {
+            const response = await fetch(`/api/transactions`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to update transaction');
+            }
+            const updatedTransaction = await response.json();
+            setTransactions(transactions.map(transaction =>
+                transaction.transactionID === formData.transactionID ? updatedTransaction : transaction
+            ));
+            setModalToggle(false);
+        } catch (error) {
+            console.error('Error updating listing:', error);
+        }
     };
 
-    const handleSaveAdd = (e) => {
+    const handleSaveAdd = async (e) => {
         e.preventDefault();
-        setTransactions([...transactions, formData]);
-        setModalToggle(false);
-    };
+        try {
+            const response = await fetch('/api/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    buyerID: formData.buyerID,
+                    sellerID: formData.sellerID,
+                    listingID: formData.listingID,
+                    transactionDate: formData.transactionDate,
+                }),
+            });
+            if (!response.ok) {
+                throw new Error('Failed to add transaction');
+            }
+            const newTransaction = await response.json();
+            setTransactions([...transactions, newTransaction]);
+            setModalToggle(false);
+        } catch (error) {
+            console.error('Error adding transaction:', error);
+        }
+};
 
     const transactionModal = (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -88,22 +149,29 @@ export default function Transactions() {
                 </h2>
                 <form onSubmit={isEditing ? handleSaveEdit : handleSaveAdd}>
                     <label className="block text-sm font-medium text-gray-700">
+                        Buyer ID
+                        <input
+                            type="text"
+                            name="buyerID"
+                            value={formData.buyerID}
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            required
+                        />
+                        Seller ID
+                        <input
+                            type="text"
+                            name="sellerID"
+                            value={formData.sellerID}
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            required
+                        />
                         Listing ID
                         <input
                             type="text"
                             name="listingID"
                             value={formData.listingID}
-                            onChange={handleChange}
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            required
-                        />
-                    </label>
-                    <label className="block text-sm font-medium text-gray-700 mt-4">
-                        Amount
-                        <input
-                            type="number"
-                            name="amount"
-                            value={formData.amount}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
@@ -137,19 +205,21 @@ export default function Transactions() {
                 <div className='flex flex-row'>
                     <h3>Transactions</h3>
                     <button
-                    className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
-                    onClick={handleAdd}
-                    title="Add"
+                        className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
+                        onClick={handleAdd}
+                        title="Add"
                     >
-                    <FiPlus/>
+                        <FiPlus/>
                     </button>
+                    <div className="bg-gray-100 text-red-500">**REFRESH PAGE AFTER TABLE CHANGE FOR NOW**</div>
                 </div>
                 <table className="min-w-full table-auto text-sm">
                     <thead>
                     <tr className="bg-gray-300 text-black">
                         <th className="px-4 py-2 text-left">Transaction ID</th>
+                        <th className="px-4 py-2 text-left">Buyer ID</th>
+                        <th className="px-4 py-2 text-left">Seller ID</th>
                         <th className="px-4 py-2 text-left">Listing ID</th>
-                        <th className="px-4 py-2 text-left">Amount</th>
                         <th className="px-4 py-2 text-left">Transaction Date</th>
                         <th className="px-4 py-2 text-left"></th>
                         <th className="px-4 py-2 text-left"></th>
@@ -157,11 +227,14 @@ export default function Transactions() {
                     </thead>
                     <tbody>
                     {transactions.map((transaction) => (
-                        <tr key={transaction.transactionID} className="border-b">
-                            <td className="px-4 py-2">{transaction.transactionID}</td>
-                            <td className="px-4 py-2">{transaction.listingID}</td>
-                            <td className="px-4 py-2">${transaction.amount}</td>
-                            <td className="px-4 py-2">{transaction.transactionDate}</td>
+                        <tr key={transaction.transaction_id} className="border-b">
+                            <td className="px-4 py-2">{transaction.transaction_id}</td>
+                            <td className="px-4 py-2">{transaction.buyer_id}</td>
+                            <td className="px-4 py-2">{transaction.seller_id}</td>
+                            <td className="px-4 py-2">{transaction.listing_id}</td>
+                            <td className="px-4 py-2">{transaction.transaction_date
+                                ? new Date(transaction.transaction_date).toLocaleDateString()
+                                : 'N/A'} </td>
                             <td>
                                 <button
                                     className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
@@ -174,7 +247,7 @@ export default function Transactions() {
                             <td>
                                 <button
                                     className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                                    onClick={() => handleDelete(transaction.transactionID)}
+                                    onClick={() => handleDelete(transaction.transaction_id)}
                                     title="Delete"
                                 >
                                     <FiTrash/>

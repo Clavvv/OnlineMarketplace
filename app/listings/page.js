@@ -17,33 +17,67 @@ export default function Listings() {
     });
 
     useEffect(() => {
-        const getData = async () => {
-            await fetch('/listings_sample.json')
-                .then((response) => response.json())
-                .then((jsonData) => {
-                    setListings(jsonData);
-                })
-                .catch((error) => console.error('Failed to load listings: ', error));
-        }
-        getData();
+        const fetchListings = async () => {
+            try {
+                const response = await fetch('/api/listings');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch listings');
+                }
+                const { data } = await response.json();
+                setListings(data);
+            } catch (error) {
+                console.error('Error fetching listings:', error);
+            }
+        };
+        fetchListings();
     }, []);
 
     const handleDelete = (listingID) => {
-        setListings(listings.filter(listing => listing.listingID !== listingID));
-    };
+
+        let requestJson = {
+            listing_id: listingID
+        };
+    
+        fetch('/api/listings', {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(requestJson)
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to delete listing')
+                    })
+                }
+                return response.json()
+            })
+            .then(() => {
+                console.log('Listing deleted successfully');
+                setListings(prevListings => prevListings.filter(listing => listing.listing_id !== listingID));
+            })
+            .catch((error) => {
+                console.error('Error deleting listing:', error);
+            })
+    }
 
     const handleEdit = (listing) => {
-        setFormData(listing);
+        setFormData({
+            listingID: listing.listing_id,
+            productID: listing.product_id,
+            userID: listing.user_id,
+            listingPrice: listing.listing_price,
+            status: listing.status,
+            condition: listing.item_condition,
+        });
         setIsEditing(true);
         setModalToggle(true);
     };
 
     const handleAdd = () => {
-        const maxID =
-            listings.reduce((max, listing) => Math.max(max, parseInt(listing.listingID, 10)), 0);
-
         setFormData({
-            listingID: String(maxID + 1),
+            listingID: '',
             productID: '',
             userID: '',
             listingPrice: '',
@@ -63,19 +97,72 @@ export default function Listings() {
         }));
     };
 
-    const handleSaveEdit = (e) => {
+    const handleSaveEdit =async  (e) => {
         e.preventDefault();
-        setListings(listings.map(listing => 
-            listing.listingID === formData.listingID ? formData : listing
-        ));
-        setModalToggle(false);
-    };
+    
+        const response = await fetch('/api/listings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to update listing');
+                    });
+                }
+                return response.json();
+            })
+            .then((updatedListing) => {
+                console.log('updated listings: ', updatedListing)
+                setListings(prevListings => {
+                    return prevListings.map(listing => {
+                        if (listing.listing_id === updatedListing.listing_id) {
+                            return updatedListing
+                        }
 
-    const handleSaveAdd = (e) => {
-        e.preventDefault();
-        setListings([...listings, formData]);
+                        return listing
+                    })
+                })
+                setModalToggle(false);
+            })
+            .catch((error) => {
+                console.error('Error updating listing:', error);
+            })
+    }
+
+    const handleSaveAdd = async (e) => {
+        e.preventDefault()
         setModalToggle(false);
-    };
+    
+        fetch('/api/listings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                productID: formData.productID,
+                userID: formData.userID,
+                listingPrice: formData.listingPrice,
+                status: formData.status,
+                condition: formData.condition,
+            }),
+        }).then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to add listing');
+                    })
+                }
+                return response.json(); //returns new listing from the database
+            }).then((newListing) => {
+                setListings(prevListings => {
+                    const updatedListings = [...prevListings, newListing[0]]
+                    return updatedListings
+                })
+
+            })
+            .catch((error) => {
+                console.error('Error adding listing:', error);
+            })
+    }
 
     const listingModal = (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -194,13 +281,13 @@ export default function Listings() {
                         </thead>
                         <tbody>
                         {listings.map((listing) => (
-                            <tr key={listing.listingID} className="border-b">
-                                <td className="px-4 py-2">{listing.listingID}</td>
-                                <td className="px-4 py-2">{listing.productID}</td>
-                                <td className="px-4 py-2">{listing.userID}</td>
-                                <td className="px-4 py-2">${listing.listingPrice}</td>
+                            <tr key={listing.listing_id} className="border-b">
+                                <td className="px-4 py-2">{listing.listing_id}</td>
+                                <td className="px-4 py-2">{listing.product_id}</td>
+                                <td className="px-4 py-2">{listing.user_id}</td>
+                                <td className="px-4 py-2">${listing.listing_price}</td>
                                 <td className="px-4 py-2">{listing.status}</td>
-                                <td className="px-4 py-2">{listing.condition}</td>
+                                <td className="px-4 py-2">{listing.item_condition}</td>
                                 <td>
                                     <button
                                         className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
@@ -213,7 +300,7 @@ export default function Listings() {
                                 <td>
                                     <button
                                         className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                                        onClick={() => handleDelete(listing.listingID)}
+                                        onClick={() => handleDelete(listing.listing_id)}
                                         title="Delete"
                                     >
                                         <FiTrash/>

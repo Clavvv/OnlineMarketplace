@@ -105,7 +105,7 @@ export default function Products() {
                 ...prevData,
                 mode: modalToggle
             }))
-        }
+    }
 
     }, [modalToggle])
 
@@ -217,7 +217,6 @@ export default function Products() {
 
         setProducts(prevProducts => {
             return prevProducts.map(product => {
-                console.log(product)
                 if (product.product_id === updatedProduct.product_id) {
 
                     return updatedProduct
@@ -425,7 +424,7 @@ export default function Products() {
                         type="submit"
                         className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
                     >
-                        Add Product
+                        Edit Product
                     </button>
                 </div>
             </form>
