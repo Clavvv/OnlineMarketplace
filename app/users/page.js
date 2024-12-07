@@ -130,20 +130,10 @@ export default function Users() {
                   />
                 </label>
                 <label className="block text-sm font-medium text-gray-700 mt-4">
-                  Email
-                  <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                      required
-                  />
-                </label>
-                <label className="block text-sm font-medium text-gray-700 mt-4">
                   Phone Number
                   <input
-                      type="text"
+                      type="tel"
+                      id="phone"
                       name="phoneNumber"
                       value={formData.phoneNumber}
                       onChange={handleChange}
