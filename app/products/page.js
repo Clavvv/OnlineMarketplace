@@ -223,12 +223,7 @@ export default function Products() {
                 }
                 return product
             })
-
         })
-
-
-
-
     }
 
     const createModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -531,7 +526,7 @@ export default function Products() {
                         </div>
                     </div>
                 </div>
-            <div className='grid mt-10 ml-56 grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-y-6'>
+            <div className='grid mt-10 mb-6 ml-56 grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-y-6'>
                 {isLoading ? new Array(3).fill(null).map((_, index) => (
                     <ProductLoadingCard key={index} />))
 
