@@ -180,14 +180,13 @@ export default function ProductsTransactions() {
             <div className="overflow-x-auto w-full max-w-4xl">
                 <div className='flex flex-row'>
                     <h3>Product Transactions</h3>
-                    <button
-                        className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
-                        onClick={handleAdd}
-                        title="Add"
-                    >
-                        <FiPlus/>
-                    </button>
-                    <div className="bg-gray-100 text-red-500">**REFRESH PAGE AFTER TABLE CHANGE FOR NOW**</div>
+                    {/*<button*/}
+                    {/*    className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"*/}
+                    {/*    onClick={handleAdd}*/}
+                    {/*    title="Add"*/}
+                    {/*>*/}
+                    {/*    <FiPlus/>*/}
+                    {/*</button>*/}
                 </div>
                 <table className="min-w-full table-auto text-sm">
                 <thead>
@@ -205,24 +204,24 @@ export default function ProductsTransactions() {
                                 <td className="px-4 py-2">{obj.product_transaction_id}</td>
                                 <td className="px-4 py-2">{obj.transaction_id}</td>
                                 <td className="px-4 py-2">{obj.product_id}</td>
-                                <td>
-                                    <button
-                                        className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
-                                        onClick={() => handleEdit(pt)}
-                                        title="Edit"
-                                    >
-                                        <FiEdit/>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button
-                                        className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                                        onClick={() => handleDelete(pt.product_transaction_id)}
-                                        title="Delete"
-                                    >
-                                        <FiTrash/>
-                                    </button>
-                                </td>
+                                {/*<td>*/}
+                                {/*    <button*/}
+                                {/*        className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"*/}
+                                {/*        onClick={() => handleEdit(pt)}*/}
+                                {/*        title="Edit"*/}
+                                {/*    >*/}
+                                {/*        <FiEdit/>*/}
+                                {/*    </button>*/}
+                                {/*</td>*/}
+                                {/*<td>*/}
+                                {/*    <button*/}
+                                {/*        className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"*/}
+                                {/*        onClick={() => handleDelete(pt.product_transaction_id)}*/}
+                                {/*        title="Delete"*/}
+                                {/*    >*/}
+                                {/*        <FiTrash/>*/}
+                                {/*    </button>*/}
+                                {/*</td>*/}
                             </tr>
                         ))}
                         </tbody>
