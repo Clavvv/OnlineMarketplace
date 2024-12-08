@@ -102,7 +102,6 @@ export default function Transactions() {
                 throw new Error('Failed to update transaction');
             }
             const updatedTransaction = await response.json();
-            console.log(updatedTransaction)
             setTransactions((prevTransactions) => {
                 return prevTransactions.map(transaction => {
                     if(transaction.transaction_id === updatedTransaction.transaction_id){
@@ -220,7 +219,6 @@ export default function Transactions() {
                     >
                         <FiPlus/>
                     </button>
-                    <div className="bg-gray-100 text-red-500">**REFRESH PAGE AFTER TABLE CHANGE FOR NOW**</div>
                 </div>
                 <table className="min-w-full table-auto text-sm">
                     <thead>
