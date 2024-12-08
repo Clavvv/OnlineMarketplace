@@ -23,7 +23,7 @@ const categoryIDMappings: Record<string, number> = {
 
 export async function GET() {
 
-    let query = `SELECT * FROM categories;`
+    let query = `SELECT * FROM categories ORDER BY category_id ASC;`
     const responseData = await sendQuery(query)
     return new Response(JSON.stringify({ data: responseData }), {
         status: 200,
@@ -39,7 +39,7 @@ export async function PUT(request: Request) {
                         UPDATE categories 
                         SET 
                         demographic = '${demographic}',
-                        category_name = ${categoryName}
+                        category_name = '${categoryName}'
                         WHERE
                         category_id = ${categoryID}
                         RETURNING *;`
@@ -78,27 +78,14 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
 
     const queryData = await request.json()
-    const { categoryID, categoryName, demographic } = queryData
-    // const category_id = categoryIDMappings[category + demographic]
-
-    // const sizeQuery = `
-    //     SELECT size_id FROM sizes
-    //         WHERE category_id = ${category_id}
-    //         AND size = '${size}'
-    //     LIMIT 1;`
+    const { categoryName, demographic } = queryData
 
     try {
 
-        // const sizeResponse = await sendQuery(sizeQuery)
-        // const { size_id } = sizeResponse[0]
-        // if (!size_id) {
-        //     return new Response(JSON.stringify({ error: 'given size was not valid for product' }), { status: 404 })
-        // }
+        console.log(categoryName, demographic)
 
-        console.log(categoryName, demographic, categoryID)
-
-        const insertQuery = `INSERT INTO categories (category_name, demographic, category_ID)
-                            VALUES ('${categoryName}', '${demographic}', ${categoryID})
+        const insertQuery = `INSERT INTO categories (category_name, demographic)
+                            VALUES ('${categoryName}', '${demographic}')
                             RETURNING *;`
 
         const databaseResponse = await sendQuery(insertQuery)

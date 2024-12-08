@@ -235,7 +235,6 @@ export default function Users() {
     </div>
   );
 
-
   return (
     <div className="flex justify-center h-full mt-8">
       <div className="overflow-x-auto w-full max-w-4xl">
