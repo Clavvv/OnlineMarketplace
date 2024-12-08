@@ -200,7 +200,7 @@ export default function Transactions() {
     );
 
     return (
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-8">
             <div className="overflow-x-auto w-full max-w-4xl">
                 <div className='flex flex-row'>
                     <h3>Transactions</h3>
