@@ -29,6 +29,7 @@ export async function PUT(request: Request) {
     try {
         const databaseResponse = await sendQuery(updateQuery)
         const updatedTransaction = databaseResponse[0]
+        console.log(updatedTransaction)
 
         return new Response(JSON.stringify(updatedTransaction), {
             status: 200,
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
                             RETURNING *;`
 
         const databaseResponse = await sendQuery(insertQuery)
+        console.log(databaseResponse)
 
         return new Response(JSON.stringify(databaseResponse), {
             status: 200,

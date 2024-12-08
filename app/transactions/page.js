@@ -102,9 +102,17 @@ export default function Transactions() {
                 throw new Error('Failed to update transaction');
             }
             const updatedTransaction = await response.json();
-            setTransactions(transactions.map(transaction =>
+            setTransactions((prevTransactions) => {
+                return prevTransactions.map(transaction => {
+                    if(transaction.transaction_id === updatedTransaction.transaction_id){
+                        return updatedTransaction
+                    }
+                    return transaction
+                })
+            })
+            /*setTransactions(transactions.map(transaction =>
                 transaction.transactionID === formData.transactionID ? updatedTransaction : transaction
-            ));
+            ));*/
             setModalToggle(false);
         } catch (error) {
             console.error('Error updating listing:', error);
@@ -113,6 +121,7 @@ export default function Transactions() {
 
     const handleSaveAdd = async (e) => {
         e.preventDefault();
+        setModalToggle(false)
         try {
             const response = await fetch('/api/transactions', {
                 method: 'POST',
@@ -128,8 +137,7 @@ export default function Transactions() {
                 throw new Error('Failed to add transaction');
             }
             const newTransaction = await response.json();
-            setTransactions([...transactions, newTransaction]);
-            setModalToggle(false);
+            setTransactions((prevData) => [...prevData, newTransaction[0]]);
         } catch (error) {
             console.error('Error adding transaction:', error);
         }
@@ -211,7 +219,6 @@ export default function Transactions() {
                     >
                         <FiPlus/>
                     </button>
-                    <div className="bg-gray-100 text-red-500">**REFRESH PAGE AFTER TABLE CHANGE FOR NOW**</div>
                 </div>
                 <table className="min-w-full table-auto text-sm">
                     <thead>
