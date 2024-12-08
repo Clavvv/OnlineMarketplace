@@ -4,41 +4,35 @@ import { FiPlus, FiEdit, FiTrash, FiX } from "react-icons/fi"
 
 export default function Sizes() {
 
-    const [sizes, setsizes] = useState([])
+    const [sizes, setSizes] = useState([])
     const [modalToggle, setModalToggle] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [isAdding, setIsAdding] = useState(false)
     const [formData, setFormData] = useState({
         sizeID: '',
         size: '',
+        categoryID: '',
         categoryName: '',
         mode: ''
     })
 
 
     useEffect(() => {
+        const fetchSizes = async () => {
+            try {
+                const response = await fetch('/api/sizes');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch sizes');
+                }
+                const { data } = await response.json();
+                setSizes(data);
+            } catch (error) {
+                console.error('Error fetching sizes:', error);
+            }
+        };
+        fetchSizes();
+    }, []);
 
-        const getData = async () => {
-            await fetch('/sizes_sample.json')
-                .then((response) => response.json())
-                .then((jsonData) => {
-                    setsizes(jsonData)
-                })
-                .catch((error) => console.error('json no load: ', error))
-        }
-        getData()
-
-    }, [])
-
-    useEffect(() => {
-
-        if (formData.mode !== modalToggle) {
-
-        setFormData((prevData) => ({
-            ...prevData,
-            mode: modalToggle
-        }))
-    }
-
-    }, [modalToggle])
 
     const handleChange = (e) => {
         e.preventDefault()
@@ -49,18 +43,126 @@ export default function Sizes() {
         }))
     }
 
-    const handleDelete = () => {
-        console.log('deleting...')
+    const handleDelete = async (sizeID) => {
+
+        try {
+            let requestJson = {
+                size_id: sizeID
+            };
+
+            fetch('/api/sizes', {
+                method: 'DELETE',
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: JSON.stringify(requestJson)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.error || 'Failed to delete size')
+                        })
+                    }
+                    return response.json()
+                })
+                .then(() => {
+                    console.log('Size deleted successfully');
+                    return setSizes(prevSizes => {
+                        return prevSizes.filter(size =>
+                            size.size_id !== sizeID
+                        );
+                    });
+                })
+        } catch (error) {
+            console.error('Error deleting size:', error);
+        }
     }
 
-    const handleEdit = () => {
-        console.log('editing...')
+    const handleEdit = (size) => {
+        setFormData({
+            sizeID: size.size_id,
+            size: size.size,
+            categoryID: size.category_id
+        });
+        setIsEditing(true);
+        setModalToggle(true);
+    };
+
+    const handleAdd = () => {
+        setFormData({
+            sizeID: '',
+            size: '',
+            categoryID: '',
+        });
+        setIsAdding(true);
+        setIsEditing(false);
+        setModalToggle(true);
+    };
+
+    const handleSaveEdit = async (e) => {
+        e.preventDefault();
+
+        const response = await fetch('/api/sizes', {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to update size');
+                    });
+                }
+                return response.json();
+            })
+            .then((updatedSize) => {
+                console.log('updated size: ', updatedSize)
+                setSizes(prevSizes => {
+                    return prevSizes.map(size => {
+                        console.log(size)
+                        if (size.size_id === updatedSize.size_id) {
+                            return updatedSize
+                        }
+                        return size
+                    })
+                })
+                setModalToggle(false);
+            })
+            .catch((error) => {
+                console.error('Error updating size:', error);
+            })
     }
 
-    const handleAdd = (e) => {
+    const handleSaveAdd = async (e) => {
         e.preventDefault()
-        console.log('Category Data: ', formData)
+        setModalToggle(false);
 
+        fetch('/api/sizes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                size: formData.size,
+                categoryID: formData.categoryID
+            }),
+        }).then((response) => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Failed to add size');
+                })
+            }
+            return response.json(); //returns new listing from the database
+        }).then((newSize) => {
+            setSizes(prevSizes => {
+                const updatedSizes = [...prevSizes, newSize[0]]
+                return updatedSizes
+            })
+
+        })
+            .catch((error) => {
+                console.error('Error adding size:', error);
+            })
     }
 
     const newSizeModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -72,9 +174,9 @@ export default function Sizes() {
                 <FiX />
             </button>
             <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
-                Add New Size
+                {isEditing ? 'Edit Size' : 'Add New Size'}
             </h2>
-            <form onSubmit={handleAdd}>
+            <form onSubmit={isEditing ? handleSaveEdit : handleSaveAdd}>
                 <div className="mb-4">
                     <label htmlFor="size" className="block text-sm font-medium text-gray-700">
                         Size
@@ -105,6 +207,7 @@ export default function Sizes() {
                         className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
                         required
                     >
+                        {/*TODO*/}
                         <option value='' disabled>choose an option</option>
                         <option value="Shirts">Shirts</option>
                         <option value="Shoes">Shoes</option>
@@ -117,7 +220,7 @@ export default function Sizes() {
                         type="submit"
                         className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
                     >
-                        Add New Size
+                        {isEditing ? 'Save Changes' : 'Add Size'}
                     </button>
                 </div>
             </form>
@@ -144,21 +247,21 @@ export default function Sizes() {
                 <th className="px-4 py-2 text-left">Size ID</th>
                 <th className="px-4 py-2 text-left">Size</th>
                 <th className="px-4 py-2 text-left">Category ID</th>
-                <th className="px-4 py-2 text-left"></th>
-                <th className="px-4 py-2 text-left"></th>
+                <th className="px-4 py-2 text-left">Edit</th>
+                <th className="px-4 py-2 text-left">Delete</th>
                 <th className="px-4 py-2 text-left"></th>
               </tr>
             </thead>
             <tbody>
               {sizes.map((size) => (
-                <tr key={size.sizeID} className="border-b">
-                  <td className="px-4 py-2">{size.sizeID}</td>
+                <tr key={size.size_id} className="border-b">
+                  <td className="px-4 py-2">{size.size_id}</td>
                   <td className="px-4 py-2">{size.size}</td>
-                  <td className="px-4 py-2">{size.categoryID}</td>
+                  <td className="px-4 py-2">{size.category_id}</td>
                   <td>
                   <button
                     className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
-                    onClick={() => handleEdit(size.sizeID)}
+                    onClick={() => handleEdit(size)}
                     title="Edit"
                   >
                     <FiEdit />
@@ -167,7 +270,7 @@ export default function Sizes() {
                   <td>
                   <button
                     className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                    onClick={() => handleDelete(category.categoryID)}
+                    onClick={() => handleDelete(size.size_id)}
                     title="Delete"
                   >
                     <FiTrash />
