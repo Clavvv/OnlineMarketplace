@@ -1,7 +1,8 @@
 import { sendQuery } from "../../../utils/db_connector"
 
 
-//defining the format of the response object
+//defining the format of the response object.
+//this is how the frontend expects to see the keys formatted
 interface ResponseObject {
     userID: number;
     firstName: string;
@@ -13,6 +14,7 @@ interface ResponseObject {
     numActiveListings: number;
 }
 
+//disgusting regex to replace _ with capital of the next char
 const convertSnakeToCamel = (str: string): string =>
     str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
 
@@ -30,7 +32,7 @@ function convertSnakeToCamelCaseForObject(obj: any): ResponseObject {
     return newObj as ResponseObject;
 }
 
-export async function PUT(request:Request){
+export async function PUT(request: Request) {
 
     const queryData = await request.json()
     const { firstName, lastName, email, phoneNumber, feedbackScore, numItemsSold, numActiveListings, userId } = queryData
@@ -49,17 +51,17 @@ export async function PUT(request:Request){
 
     try {
         const databaseResponse = await sendQuery(updateQuery)
-    const response = convertSnakeToCamelCaseForObject(databaseResponse[0])  // should only return one object since userId is unique
+        const response = convertSnakeToCamelCaseForObject(databaseResponse[0])  // should only return one object since userId is unique
 
-    console.log(response)
+        console.log(response)
 
-    return new Response(JSON.stringify(response), {
+        return new Response(JSON.stringify(response), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
         console.error('failed to update users', error)
-        return new Response('failed to update user', {status: 500})
+        return new Response('failed to update user', { status: 500 })
     }
 }
 
@@ -89,29 +91,48 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
 
-        // Will need to handle error and push to frontend if the phone_number and email are non-unique
-        const queryData = await request.json()
-        const { firstName, lastName, email, phoneNumber, feedbackScore, numItemsSold, numActiveListings } = queryData
+    // Will need to handle error and push to frontend if the phone_number and email are non-unique
+    const queryData = await request.json()
+    const { firstName, lastName, email, phoneNumber, feedbackScore, numItemsSold, numActiveListings } = queryData
 
-        console.log(queryData)
+    console.log(queryData)
 
-        try {
+    try {
 
-            const insertQuery = `INSERT INTO users (first_name, last_name, phone_number, email, feedback_score, num_items_sold, num_active_listings)
+        const insertQuery = `INSERT INTO users (first_name, last_name, phone_number, email, feedback_score, num_items_sold, num_active_listings)
                             VALUES ('${firstName}', '${lastName}', '${phoneNumber}', '${email}', ${feedbackScore}, ${numItemsSold}, ${numActiveListings})
                             RETURNING *;
                             `
-            const databaseResponse = await sendQuery(insertQuery)
+        const databaseResponse = await sendQuery(insertQuery)
+        const response: ResponseObject[] = []
 
-            console.log(databaseResponse)
-            return new Response(JSON.stringify(databaseResponse), {
-                status: 200,
-                headers: {
-                    'Content-type': 'application/json'
-                }
-            })
-
-        } catch (error) {
-            console.error('UH OH CODE NO WORKO', error)
+        for (let obj of databaseResponse) {
+            const newObj = convertSnakeToCamelCaseForObject(obj);
+            response.push(newObj);
         }
+
+        return new Response(JSON.stringify(response), {
+            status: 200,
+            headers: {
+                'Content-type': 'application/json'
+            }
+        })
+
+    } catch (error) {
+        console.error('UH OH CODE NO WORKO', error)
     }
+}
+
+
+
+export async function DELETE(request:Request) {
+    const queryData = await request.json()
+    console.log(queryData)
+    let deleteQuery = `DELETE FROM users WHERE user_id = ${queryData.userId}`
+
+    const databaseResponse = await sendQuery(deleteQuery);
+    return new Response(JSON.stringify({ data: databaseResponse }), {
+        status: 200,
+        headers: { 'Content-type': 'application/json' }
+    })
+}

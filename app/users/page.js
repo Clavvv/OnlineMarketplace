@@ -32,8 +32,25 @@ export default function Users() {
 
   }, []);
 
-  const handleDelete = (userID) => {
-    setUsers(users.filter(user => user.userId !== userID));
+  const handleDelete = async (userID) => {
+    const response = await fetch('/api/users', {
+      method: 'DELETE',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify({userId: userID})
+    })
+
+    //resonse returns 200 but no data so if everything went well we just delete the userId that we sent
+    if (!response.ok){
+      throw new Error('failed to delete user oopsie...')
+    } else {
+      setUsers(users.filter(user => user.userId !== userID))
+    }
+
+
+
+
   };
 
   const handleEdit = (user) => {
@@ -47,16 +64,6 @@ export default function Users() {
     const maxID =
       users.reduce((max, user) => Math.max(max, parseInt(user.userID, 10)), 0);
 
-    setFormData({
-      userID: String(maxID + 1),
-      firstName: '',
-      lastName: '',
-      email: '',
-      phoneNumber: '',
-      feedbackScore: '',
-      numItemsSold: '',
-      numActiveListings: ''
-    });
     setIsAdding(true);
     setIsEditing(false);
     setModalToggle(true);
@@ -100,28 +107,28 @@ export default function Users() {
 
   };
 
-  const handleSaveAdd = (e) => {
+  const handleSaveAdd = async (e) => {
     e.preventDefault();
-    setUsers([...users, formData]);
     setModalToggle(false);
 
-    console.log(formData);
-
-    fetch('/api/users', {
+    const response = await fetch('/api/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(formData),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Response:', data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+
+    if (!response.ok) {
+      throw new Error('failed to save the user try again later...')
+
+    }
+
+    const parsedData = await response.json()
+    const newUser= parsedData[0]
+    setUsers((prevData) => [...prevData, newUser])
   };
+
 
 
   const userModal = (
@@ -280,7 +287,7 @@ export default function Users() {
                 <td>
                   <button
                     className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                    onClick={() => handleDelete(user.userID)}
+                    onClick={() => handleDelete(user.userId)}
                     title="Delete"
                   >
                     <FiTrash />
