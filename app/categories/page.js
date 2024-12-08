@@ -1,6 +1,6 @@
 'use client'
-import {useEffect, useState} from 'react';
-import {FiEdit, FiPlus, FiTrash, FiX} from "react-icons/fi"
+import { useEffect, useState } from 'react';
+import { FiEdit, FiPlus, FiTrash, FiX } from "react-icons/fi"
 
 export default function Categories() {
 
@@ -33,35 +33,36 @@ export default function Categories() {
 
 
     const handleDelete = async (categoryID) => {
-    try {
-        let requestJson = {
-            category_id: categoryID
-        };
 
-        fetch('/api/categories', {
-            method: 'DELETE',
-            headers: {
-                'Content-type': 'application/json',
-            },
-            body: JSON.stringify(requestJson)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.error || 'Failed to delete category')
-                    })
-                }
-                return response.json()
+        try {
+            let requestJson = {
+                category_id: categoryID
+            };
+
+            fetch('/api/categories', {
+                method: 'DELETE',
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: JSON.stringify(requestJson)
             })
-            .then(() => {
-                console.log('Category deleted successfully');
-                return setCategories(prevCategories => {
-                    return prevCategories.filter(category =>
-                        category.category_ID !== categoryID
-                    );
-                });
-            })
-    } catch(error) {
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.error || 'Failed to delete category')
+                        })
+                    }
+                    return response.json()
+                })
+                .then(() => {
+                    console.log('Category deleted successfully');
+                    return setCategories(prevCategories => {
+                        return prevCategories.filter(category =>
+                            category.category_id !== categoryID
+                        );
+                    });
+                })
+        } catch (error) {
             console.error('Error deleting category:', error);
         }
     }
@@ -144,19 +145,19 @@ export default function Categories() {
                 demographic: formData.demographic
             }),
         }).then((response) => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.error || 'Failed to add category');
-                    })
-                }
-                return response.json(); //returns new listing from the database
-            }).then((newCategory) => {
-                setCategories(prevCategories => {
-                    const updatedCategories = [...prevCategories, newCategory[0]]
-                    return updatedCategories
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Failed to add category');
                 })
-
+            }
+            return response.json(); //returns new listing from the database
+        }).then((newCategory) => {
+            setCategories(prevCategories => {
+                const updatedCategories = [...prevCategories, newCategory[0]]
+                return updatedCategories
             })
+
+        })
             .catch((error) => {
                 console.error('Error adding category:', error);
             })
@@ -229,58 +230,58 @@ export default function Categories() {
 
     return (
         <div className="flex justify-center mt-8">
-        <div className="overflow-x-auto w-full max-w-4xl">
-        <div className = 'flex flex-row'>
-            <h3>Add Category</h3>
-            <button
-                    className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
-                    onClick={handleAdd}
-                    title="Add"
-                  >
-                    <FiPlus />
-            </button>
+            <div className="overflow-x-auto w-full max-w-4xl">
+                <div className='flex flex-row'>
+                    <h3>Add Category</h3>
+                    <button
+                        className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
+                        onClick={handleAdd}
+                        title="Add"
+                    >
+                        <FiPlus />
+                    </button>
+                </div>
+                <table className="min-w-full table-auto text-sm">
+                    <thead>
+                        <tr className="bg-gray-300 text-black">
+                            <th className="px-4 py-2 text-left">Category ID</th>
+                            <th className="px-4 py-2 text-left">Category Name</th>
+                            <th className="px-4 py-2 text-left">Demographic</th>
+                            <th className="px-4 py-2 text-left"></th>
+                            <th className="px-4 py-2 text-left"></th>
+                            <th className="px-4 py-2 text-left"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {categories.map((category) => (
+                            <tr key={category.category_id} className="border-b">
+                                <td className="px-4 py-2">{category.category_id}</td>
+                                <td className="px-4 py-2">{category.category_name}</td>
+                                <td className="px-4 py-2">{category.demographic}</td>
+                                <td>
+                                    <button
+                                        className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
+                                        onClick={() => handleEdit(category)}
+                                        title="Edit"
+                                    >
+                                        <FiEdit />
+                                    </button>
+                                </td>
+                                <td>
+                                    <button
+                                        className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
+                                        onClick={() => handleDelete(category.category_id)}
+                                        title="Delete"
+                                    >
+                                        <FiTrash />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {modalToggle && newCategoryModal}
         </div>
-          <table className="min-w-full table-auto text-sm">
-            <thead>
-              <tr className="bg-gray-300 text-black">
-                <th className="px-4 py-2 text-left">Category ID</th>
-                <th className="px-4 py-2 text-left">Category Name</th>
-                <th className="px-4 py-2 text-left">Demographic</th>
-                <th className="px-4 py-2 text-left"></th>
-                <th className="px-4 py-2 text-left"></th>
-                <th className="px-4 py-2 text-left"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((category) => (
-                <tr key={category.category_id} className="border-b">
-                  <td className="px-4 py-2">{category.category_id}</td>
-                  <td className="px-4 py-2">{category.category_name}</td>
-                  <td className="px-4 py-2">{category.demographic}</td>
-                  <td>
-                  <button
-                    className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
-                    onClick={() => handleEdit(category)}
-                    title="Edit"
-                  >
-                    <FiEdit />
-                  </button>
-                  </td>
-                  <td>
-                  <button
-                    className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                    onClick={() => handleDelete(category.category_id)}
-                    title="Delete"
-                  >
-                    <FiTrash />
-                  </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {modalToggle && newCategoryModal}
-      </div>
     )
 }
