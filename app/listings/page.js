@@ -97,7 +97,7 @@ export default function Listings() {
         }));
     };
 
-    const handleSaveEdit =async  (e) => {
+    const handleSaveEdit = async (e) => {
         e.preventDefault();
     
         const response = await fetch('/api/listings', {

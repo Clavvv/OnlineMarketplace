@@ -1,68 +1,91 @@
 'use client'
-import {useState, useEffect} from 'react';
-import { FiPlus, FiEdit, FiTrash, FiX } from "react-icons/fi"
+import {useEffect, useState} from 'react';
+import {FiEdit, FiPlus, FiTrash, FiX} from "react-icons/fi"
 
 export default function Categories() {
 
     const [categories, setCategories] = useState([])
     const [modalToggle, setModalToggle] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [isAdding, setIsAdding] = useState(false)
     const [formData, setFormData] = useState({
         categoryID: '',
         categoryName: '',
-        demographic: '',
-        mode: ''
+        demographic: ''
     })
 
 
     useEffect(() => {
-        const getData = async () => {
-
+        const fetchCategories = async () => {
             try {
-                const response = await fetch('/api/categories')
-
+                const response = await fetch('/api/categories');
                 if (!response.ok) {
-                    throw new Error('failed to fetch data bozo')
+                    throw new Error('Failed to fetch categories');
                 }
-
-                let returnedData = await response.json()
-                let data= returnedData.data.map((category) => {
-                    return {
-                        ...category,
-                    }
-                })
-
-                setCategories(data)
-
+                const { data } = await response.json();
+                setCategories(data);
             } catch (error) {
-                console.log('something went wrong', error)
+                console.error('Error fetching categories:', error);
             }
+        };
+        fetchCategories();
+    }, []);
+
+
+    const handleDelete = async (categoryID) => {
+    try {
+        let requestJson = {
+            category_id: categoryID
+        };
+
+        fetch('/api/categories', {
+            method: 'DELETE',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(requestJson)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to delete category')
+                    })
+                }
+                return response.json()
+            })
+            .then(() => {
+                console.log('Category deleted successfully');
+                return setCategories(prevCategories => {
+                    return prevCategories.filter(category =>
+                        category.category_ID !== categoryID
+                    );
+                });
+            })
+    } catch(error) {
+            console.error('Error deleting category:', error);
         }
-        getData()
-    }, [])
-
-    useEffect(() => {
-
-        if (formData.mode !== modalToggle) {
-
-        setFormData((prevData) => ({
-            ...prevData,
-            mode: modalToggle
-        }))
     }
 
-    }, [modalToggle])
+    const handleEdit = (category) => {
+        setFormData({
+            categoryID: category.category_id,
+            categoryName: category.category_name,
+            demographic: category.demographic,
+        });
+        setIsEditing(true);
+        setModalToggle(true);
+    };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        if (formData.mode === 'delete') {
-            handleDeleteCategory()
-        } else if (formData.mode === 'create') {
-            handleAddCategory()
-    } else if (formData.mode === 'edit') {
-        handleEditCategory()
-
-    }
-}
+    const handleAdd = () => {
+        setFormData({
+            categoryID: '',
+            categoryName: '',
+            demographic: '',
+        });
+        setIsAdding(true);
+        setIsEditing(false);
+        setModalToggle(true);
+    };
 
     const handleChange = (e) => {
         e.preventDefault()
@@ -73,34 +96,8 @@ export default function Categories() {
         }))
     }
 
-    const handleDeleteCategory = () => {
-
-        let requestJson = {
-                action: formData.mode,
-                product_id: formData.productID
-        }
-
-        const response = fetch('/api/categories', {
-            method: 'DELETE',
-            headers: {
-                'Content-type': 'application/json',
-            },
-            body: JSON.stringify(requestJson)
-        }).then(response => {
-
-            if (!response.ok) {
-                throw new Error('failed to delete category')
-            }
-
-            return response.json()
-        }).then(() => {
-
-            setCategories(prevCategories => prevCategories.filter(category =>
-                category.categoryID != formData.categoryID))
-        })
-    }
-
-    const handleEditCategory = async () => {
+    const handleSaveEdit = async (e) => {
+        e.preventDefault();
 
         const response = await fetch('/api/categories', {
             method: 'PUT',
@@ -109,53 +106,64 @@ export default function Categories() {
             },
             body: JSON.stringify(formData)
         })
-
-        const data = await response.json()
-
-        const updatedCategory = {
-            ...data
-        }
-
-        console.log(updatedCategory)
-
-        setCategories(prevCategories => {
-            return prevCategories.map(category => {
-                console.log(category)
-                if (category.categoryID === updatedCategory.categoryID) {
-
-                    return updatedCategory
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to update category');
+                    });
                 }
-                return category
+                return response.json();
             })
-
-        })
-    }
-
-    const handleAddCategory = () => {
-
-        const response = fetch('/api/categories', {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-
-                const newCategory = {
-                    ...data[0]
-                }
-
-                setCategories(prevData => {
-                    return [...prevData, newCategory]
+            .then((updatedCategory) => {
+                console.log('updated category: ', updatedCategory)
+                setCategories(prevCategories => {
+                    return prevCategories.map(category => {
+                        console.log(category)
+                        if (category.category_id === updatedCategory.category_id) {
+                            return updatedCategory
+                        }
+                        return category
+                    })
                 })
-            }).catch(error => {
-                console.error('query failed', error)
+                setModalToggle(false);
+            })
+            .catch((error) => {
+                console.error('Error updating category:', error);
             })
     }
 
-    const newSizeModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    const handleSaveAdd = async (e) => {
+        e.preventDefault()
+        setModalToggle(false);
+
+        fetch('/api/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                categoryName: formData.categoryName,
+                demographic: formData.demographic
+            }),
+        }).then((response) => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to add category');
+                    })
+                }
+                return response.json(); //returns new listing from the database
+            }).then((newCategory) => {
+                setCategories(prevCategories => {
+                    const updatedCategories = [...prevCategories, newCategory[0]]
+                    return updatedCategories
+                })
+
+            })
+            .catch((error) => {
+                console.error('Error adding category:', error);
+            })
+    }
+
+
+    const newCategoryModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <button
                 className="flex w-full justify-end text-gray-500 hover:text-gray-700"
@@ -164,9 +172,9 @@ export default function Categories() {
                 <FiX />
             </button>
             <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
-                Add New Category
+                {isEditing ? 'Edit Category' : 'Add New Category'}
             </h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={isEditing ? handleSaveEdit : handleSaveAdd}>
                 <div className="mb-4">
                     <label htmlFor="demographic" className="block text-sm font-medium text-gray-700">
                         Demographic
@@ -211,7 +219,7 @@ export default function Categories() {
                         type="submit"
                         className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
                     >
-                        Add Category
+                        {isEditing ? 'Save Changes' : 'Add Category'}
                     </button>
                 </div>
             </form>
@@ -226,7 +234,7 @@ export default function Categories() {
             <h3>Add Category</h3>
             <button
                     className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
-                    onClick={(e) => setModalToggle(true)}
+                    onClick={handleAdd}
                     title="Add"
                   >
                     <FiPlus />
@@ -252,15 +260,7 @@ export default function Categories() {
                   <td>
                   <button
                     className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
-                    onClick={(e) => {
-                        setFormData({
-                            categoryID: category.category_id,
-                            categoryName: category.category_name,
-                            demographic: category.demographic,
-                            mode: 'edit',
-                        });
-                        setModalToggle(true);
-                      }}
+                    onClick={() => handleEdit(category)}
                     title="Edit"
                   >
                     <FiEdit />
@@ -269,7 +269,7 @@ export default function Categories() {
                   <td>
                   <button
                     className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                    onClick={() => handleDeleteCategory(category.categoryID)}
+                    onClick={() => handleDelete(category.category_id)}
                     title="Delete"
                   >
                     <FiTrash />
@@ -280,7 +280,7 @@ export default function Categories() {
             </tbody>
           </table>
         </div>
-        {modalToggle && newSizeModal}
+        {modalToggle && newCategoryModal}
       </div>
     )
 }
