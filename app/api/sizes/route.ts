@@ -23,7 +23,12 @@ const categoryIDMappings: Record<string, number> = {
 
 export async function GET() {
 
-    let query = `SELECT * FROM sizes ORDER BY size_id ASC;`
+    // we use this join to only select sizes which have an 'active' category_id meaning if we delete the category_id in categories we wont
+    // select the sizes which used to belong to that id. They still exist in the database though so you must be careful during later queries
+
+    let query = `SELECT * FROM sizes s
+                    JOIN categories c ON s.category_id = c.category_id;`
+
     const responseData = await sendQuery(query)
     return new Response(JSON.stringify({ data: responseData }), {
         status: 200,
