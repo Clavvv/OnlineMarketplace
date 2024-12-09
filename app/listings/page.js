@@ -234,6 +234,9 @@ export default function Listings() {
                             required
                         >
                             <option value="" disabled>Select Status</option>
+                            {formData.status === 'Sold' && (
+                                <option value="Sold" disabled>Sold</option>
+                            )}
                             <option value="Active">Active</option>
                             <option value="Inactive">Inactive</option>
                             <option value="Pending">Pending</option>

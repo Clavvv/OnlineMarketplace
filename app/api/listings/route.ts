@@ -36,8 +36,14 @@ export async function PUT(request: Request) {
         WHERE listing_id = ${listingID}
         RETURNING *;`;
 
+    const deleteTransaction = `
+        DELETE FROM transactions
+        USING listings
+        WHERE transactions.listing_id = listings.listing_id
+        AND listings.status = 'Active';`
+
     try {
-        const databaseResponse = await sendQuery(updateQuery);
+        const databaseResponse = await transactSQL([updateQuery, deleteTransaction]);
         const updatedListing = databaseResponse[0];
 
         return new Response(JSON.stringify(updatedListing), {
