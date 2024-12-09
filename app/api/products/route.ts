@@ -24,11 +24,10 @@ const categoryIDMappings: Record<string, number> = {
 
 export async function GET() {
 
-    let query = `SELECT * FROM products;`
-    let testQuery = `SELECT p.product_id, p.brand, p.size_id, p.product_name, c.category_name, c.demographic
+    let query= `SELECT p.product_id, p.brand, p.size_id, p.product_name, c.category_name, c.demographic
                     FROM products p
                     JOIN categories c on p.category_id = c.category_id;`
-    const responseData = await sendQuery(testQuery)
+    const responseData = await sendQuery(query)
     return new Response(JSON.stringify({ data: responseData }), {
         status: 200,
         headers: { 'Content-type': 'application/json' }
@@ -47,7 +46,6 @@ export async function PUT(request: Request) {
 
     const getCategoryIdByProductIDResponse = await sendQuery(getCategoryIdByProductID)
     const { category_id } = getCategoryIdByProductIDResponse[0]
-
     const updateQuery = `
                         UPDATE products 
                         SET 
@@ -58,8 +56,28 @@ export async function PUT(request: Request) {
                         product_id = ${productID}
                         RETURNING *;`
 
+    const testQuery = `WITH updated_product AS (
+                        UPDATE products
+                        SET
+                        product_name = '${productName}',
+                        brand = '${brand}',
+                        category_id = ${category_id}
+                        WHERE
+                        product_id = ${productID}
+                        RETURNING *)
+                        SELECT 
+                        p.product_id,
+                        p.product_name,
+                        p.brand,
+                        p.size_id,
+                        c.category_name,
+                        c.demographic
+                        FROM products p
+                        JOIN categories c on p.category_id = p.category_id;
+                        `
+
     try {
-        const databaseResponse = await sendQuery(updateQuery)
+        const databaseResponse = await sendQuery(testQuery)
         const updatedProduct = databaseResponse[0]
 
         return new Response(JSON.stringify(updatedProduct), {
