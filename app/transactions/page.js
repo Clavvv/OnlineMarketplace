@@ -48,39 +48,40 @@ export default function Transactions() {
         fetchListings();
     }, []);
 
-    const handleDelete = async (transactionID) => {
-    try {
-        console.log('Deleting transaction with ID:', transactionID);
-        let requestJson = {
-                transaction_id: transactionID
-        }
-        const response = await fetch(`/api/transactions`, {
-            method: 'DELETE',
-            headers: {
-                'Content-type': 'application/json',
-            },
-            body: JSON.stringify(requestJson)
-        });
+    const handleDelete = async (transaction) => {
+        try {
+            console.log('Deleting transaction with ID:', transaction.transaction_id);
+            console.log(transaction)
+            const response = await fetch(`/api/transactions`, {
+                method: 'DELETE',
+                headers: { 'Content-type': 'application/json' },
+                body: JSON.stringify({
+                    transactionID: transaction.transaction_id,
+                    listingID: transaction.listing_id
+                }),
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to delete transaction');
-        }
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete transaction');
+            }
 
-        console.log('Transaction deleted successfully');
-        setTransactions(transactions.filter(transaction => transaction.transaction_id !== transactionID));
-    } catch (error) {
-        console.error('Error deleting listing:', error);
-    }
-};
+            console.log('Transaction deleted successfully');
+            setTransactions(transactions.filter((t) => t.transaction_id !== transaction.transaction_id));
+        } catch (error) {
+            console.error('Error deleting listing:', error);
+        }
+    };
 
     const handleEdit = (transaction) => {
+        const formattedDate = new Date(transaction.transaction_date).toISOString().split('T')[0];
+
         setFormData({
             transactionID: transaction.transaction_id,
             buyerID: transaction.buyer_id,
             sellerID: transaction.seller_id,
             listingID: transaction.listing_id,
-            transactionDate: transaction.transaction_date,
+            transactionDate: formattedDate,
         });
         setIsEditing(true);
         setIsAdding(false);
@@ -108,7 +109,7 @@ export default function Transactions() {
             setFormData((prevData) => ({
                 ...prevData,
                 listingID: value,
-                sellerID: selectedListing ? selectedListing.user_id : '', // Ensure user_id maps to sellerID
+                sellerID: selectedListing ? selectedListing.user_id : '',
             }));
         } else {
             setFormData((prevData) => ({
@@ -138,9 +139,6 @@ export default function Transactions() {
                     return transaction
                 })
             })
-            /*setTransactions(transactions.map(transaction =>
-                transaction.transactionID === formData.transactionID ? updatedTransaction : transaction
-            ));*/
             setModalToggle(false);
         } catch (error) {
             console.error('Error updating listing:', error);
@@ -167,28 +165,8 @@ export default function Transactions() {
             const newTransaction = await response.json();
             setTransactions((prevData) => [...prevData, newTransaction[0]]);
 
-            await updateListingStatus(formData.listingID, 'sold');
         } catch (error) {
             console.error('Error adding transaction:', error);
-        }
-    };
-
-    const updateListingStatus = async (listingID, status) => {
-        try {
-            const response = await fetch(`/api/listings`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ listingID, status }),
-            });
-            console.log('listing update response: ', response)
-
-            if (!response.ok) {
-                throw new Error('Failed to update listing status');
-            }
-
-            console.log(`Listing ${listingID} status updated to ${status}`);
-        } catch (error) {
-            console.error(`Error updating status for listing ${listingID}:`, error);
         }
     };
 
@@ -280,8 +258,8 @@ export default function Transactions() {
                     <thead>
                     <tr className="bg-gray-300 text-black">
                         <th className="px-4 py-2 text-left">Transaction ID</th>
-                        <th className="px-4 py-2 text-left">Buyer ID</th>
                         <th className="px-4 py-2 text-left">Seller ID</th>
+                        <th className="px-4 py-2 text-left">Buyer ID</th>
                         <th className="px-4 py-2 text-left">Listing ID</th>
                         <th className="px-4 py-2 text-left">Transaction Date</th>
                         <th className="px-4 py-2 text-left">Edit</th>
@@ -292,8 +270,8 @@ export default function Transactions() {
                     {transactions.map((transaction) => (
                         <tr key={transaction.transaction_id} className="border-b">
                             <td className="px-4 py-2">{transaction.transaction_id}</td>
-                            <td className="px-4 py-2">{transaction.buyer_id}</td>
                             <td className="px-4 py-2">{transaction.seller_id}</td>
+                            <td className="px-4 py-2">{transaction.buyer_id}</td>
                             <td className="px-4 py-2">{transaction.listing_id}</td>
                             <td className="px-4 py-2">{transaction.transaction_date
                                 ? new Date(transaction.transaction_date).toLocaleDateString()
@@ -310,7 +288,7 @@ export default function Transactions() {
                             <td>
                                 <button
                                     className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                                    onClick={() => handleDelete(transaction.transaction_id)}
+                                    onClick={() => handleDelete(transaction)}
                                     title="Delete"
                                 >
                                     <FiTrash/>

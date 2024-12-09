@@ -18,7 +18,7 @@ export async function sendQuery(query:string) {
     return response
 }
 
-export async function sendTransaction(queries:string[]){
+export async function transactSQL(queries:string[]){
 
     const connString = process.env.DATABASE_URL
     /*const input = [

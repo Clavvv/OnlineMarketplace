@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sendQuery } from "../../../utils/db_connector"
+import {sendQuery, transactSQL} from "../../../utils/db_connector"
 
 const columnMappings: Record<string, string> = {
 
@@ -25,34 +25,6 @@ export async function GET() {
 export async function PUT(request: Request) {
     const { listingID, productID, userID, listingPrice, status, condition } = await request.json();
 
-    // If it's a status-only update (adding transaction)
-    if (productID === undefined && userID === undefined && listingPrice === undefined && condition === undefined) {
-        const updateStatusQuery = `
-            UPDATE listings 
-            SET status = '${status}'
-            WHERE listing_id = ${listingID}
-            RETURNING *;`;
-
-        try {
-            const databaseResponse = await sendQuery(updateStatusQuery);
-            const updatedListing = databaseResponse[0];
-
-            return new Response(JSON.stringify(updatedListing), {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-        } catch (error) {
-            console.error('Error updating status:', error);
-            return new Response(JSON.stringify({ error: 'Failed to update listing status' }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-    }
-
-    // Handle a full update
     const updateQuery = `
         UPDATE listings 
         SET 
@@ -85,8 +57,11 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     const queryData = await request.json()
-    let query = `DELETE FROM listings WHERE listing_id = ${queryData.listing_id}`
-    const databaseResponse = await sendQuery(query)
+
+    const deleteListing = `DELETE FROM listings WHERE listing_id = ${queryData.listing_id}`
+    const deleteTransaction = `DELETE FROM transactions WHERE listing_id = ${queryData.listing_id}`
+
+    const databaseResponse = await transactSQL([deleteListing, deleteTransaction])
 
     return new Response(JSON.stringify({ data: databaseResponse }), {
         status: 200,

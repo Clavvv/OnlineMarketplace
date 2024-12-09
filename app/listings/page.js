@@ -71,6 +71,7 @@ export default function Listings() {
             status: listing.status,
             condition: listing.item_condition,
         });
+        setIsAdding(false);
         setIsEditing(true);
         setModalToggle(true);
     };
@@ -211,7 +212,20 @@ export default function Listings() {
                         />
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
-                        Status
+                        <div className="flex items-center space-x-1">
+                            <span>Status</span>
+                            {isEditing && (
+                                <div
+                                className="group relative flex items-center justify-center w-4 h-4 bg-gray-300 text-gray-800 rounded-full cursor-pointer text-xs">
+                                ?
+                                {/* TOOLTIP */}
+                                    <div
+                                        className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 w-40 text-center">
+                                        Selecting "Active" will delete any existing transactions associated with this listing.
+                                    </div>
+                                </div>
+                                )}
+                        </div>
                         <select
                             name="status"
                             value={formData.status}
@@ -220,10 +234,9 @@ export default function Listings() {
                             required
                         >
                             <option value="" disabled>Select Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="sold">Sold</option>
-                            <option value="pending">Pending</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Pending">Pending</option>
                         </select>
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
@@ -236,9 +249,9 @@ export default function Listings() {
                             required
                         >
                             <option value="" disabled>Select Condition</option>
-                            <option value="new">New</option>
-                            <option value="like new">Like New</option>
-                            <option value="used">Used</option>
+                            <option value="New">New</option>
+                            <option value="Like New">Like New</option>
+                            <option value="Used">Used</option>
                         </select>
                     </label>
                     <button
