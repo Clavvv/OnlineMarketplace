@@ -57,7 +57,7 @@ export default function Products() {
     const [products, setProducts] = useState([])
     const [modalToggle, setModalToggle] = useState('')
     const [filterIsOpen, setFilterisOpen] = useState(false)
-    const [filterSelectedOption, setFilterSelectedOption] = useState("All")
+    const [filterSelectedOption, setFilterSelectedOption] = useState("all")
     const [sizeOptionsForSelectedCategory, setSizeOptionsForSelectedCategory] = useState([])
     const [filtereredProducts, setFilteredProducts] = useState([])
     const [formData, setFormData] = useState({
@@ -123,9 +123,9 @@ export default function Products() {
 
     useEffect(() => {
 
-        setFilteredProducts(filterSelectedOption === 'all' ? products : products.filter((item)=> item.category_name.toLowerCase() === filterSelectedOption))
+        setFilteredProducts(filterSelectedOption === 'all' ? products : products.filter(item => item.category_name.toLowerCase() === filterSelectedOption))
 
-    }, [filterSelectedOption])
+    }, [filterSelectedOption, products])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -135,7 +135,6 @@ export default function Products() {
             handleAddProduct()
     } else if (formData.mode === 'edit'){
         handleEditProduct()
-
     }
 }
 
@@ -171,6 +170,8 @@ export default function Products() {
                 setProducts(prevData => {
                     return [...prevData, newProductWithImage]
                 })
+
+                setModalToggle('')
             }).catch(error => {
                 console.error('query failed', error)
             })
@@ -219,17 +220,12 @@ export default function Products() {
             image: '/sample_product_image.png'
         }
 
-        console.log(updatedProduct)
-
-        setProducts(prevProducts => {
-            return prevProducts.map(product => {
-                if (product.product_id === updatedProduct.product_id) {
-
-                    return updatedProduct
-                }
-                return product
-            })
-        })
+        setProducts(prevProducts => [
+            ...prevProducts.map(product =>
+                product.product_id === updatedProduct.product_id ? updatedProduct : product
+            ),
+        ]);
+        setModalToggle('')
     }
 
     const createModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
