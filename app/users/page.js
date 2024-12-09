@@ -181,12 +181,11 @@ export default function Users() {
             />
           </label>
           <label className="block text-sm font-medium text-gray-700 mt-4">
-            Phone Number
+            Phone Number <small>(format: 123-456-7890)</small>
             <input
               type="tel"
               id="phone"
-              name="phoneNumber"
-              pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
+              name="phoneNumber" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
               value={formData.phoneNumber}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
