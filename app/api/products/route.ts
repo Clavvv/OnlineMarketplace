@@ -26,7 +26,8 @@ export async function GET() {
 
     let query= `SELECT p.product_id, p.brand, p.size_id, p.product_name, c.category_name, c.demographic
                     FROM products p
-                    JOIN categories c on p.category_id = c.category_id;`
+                    JOIN categories c on p.category_id = c.category_id
+                    ORDER BY p.product_id ASC;`
     const responseData = await sendQuery(query)
     return new Response(JSON.stringify({ data: responseData }), {
         status: 200,

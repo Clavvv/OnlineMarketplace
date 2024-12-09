@@ -190,7 +190,7 @@ export default function Listings() {
                         />
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
-                        User ID
+                        Seller ID
                         <input
                             type="text"
                             name="userID"
@@ -287,7 +287,7 @@ export default function Listings() {
                         <tr className="bg-gray-300 text-black">
                             <th className="px-4 py-2 text-left">Listing ID</th>
                             <th className="px-4 py-2 text-left">Product ID</th>
-                            <th className="px-4 py-2 text-left">User ID</th>
+                            <th className="px-4 py-2 text-left">Seller ID</th>
                             <th className="px-4 py-2 text-left">Listing Price</th>
                             <th className="px-4 py-2 text-left">Status</th>
                             <th className="px-4 py-2 text-left">Condition</th>

@@ -86,7 +86,25 @@ export async function POST(request: Request) {
                                  WHERE 
                                      listing_id = ${listingID};`
 
-        const databaseResponse = await transactSQL([insertTransaction, markListingSold])
+        const fetchProductID = `SELECT product_id FROM listings WHERE listing_id = ${listingID};`;
+
+
+
+        const insertInPTtable = `INSERT INTO product_transactions (transaction_id, product_id)
+                                 SELECT 
+                                    t.transaction_id, 
+                                    l.product_id
+                                 FROM transactions t
+                                 JOIN listings l 
+                                 ON 
+                                     t.listing_id = l.listing_id
+                                 WHERE 
+                                     t.listing_id = ${listingID}
+                                 ORDER BY 
+                                     t.transaction_id DESC
+                                 LIMIT 1;`
+
+        const databaseResponse = await transactSQL([insertTransaction, markListingSold, insertInPTtable])
         console.log(databaseResponse)
 
         return new Response(JSON.stringify(databaseResponse), {

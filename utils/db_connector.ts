@@ -41,18 +41,23 @@ export async function transactSQL(queries:string[]){
     console.log('handling transaction: ', queries)
     const sql = neon(connString)
 
+    let insertResult = null; // Variable to store the result of the INSERT query
+
     try {
-
-        await sql('BEGIN')
-        for (let query of queries){
-            console.log(await sql(query))
+        await sql('BEGIN');
+        for (let query of queries) {
+            const result = await sql(query);
+            // Check if this is the INSERT query and capture its result
+            if (query.trim().startsWith('INSERT INTO transactions')) {
+                insertResult = result[0];
+            }
         }
-        await sql('COMMIT')
-        return 'transaction complete'
-    } catch (error){
-        console.log('TRANSACTION FAILED...ROLLING BACK: ', error)
-        await sql('ROLLBACK')
-        return;
+        await sql('COMMIT');
+        // Return the result of the INSERT query
+        return insertResult;
+    } catch (error) {
+        console.log('TRANSACTION FAILED...ROLLING BACK: ', error);
+        await sql('ROLLBACK');
+        throw error;
     }
-
 }

@@ -66,7 +66,7 @@ export async function PUT(request: Request) {
 }
 
 export async function GET(request: Request) {
-    const selectAllQuery = `SELECT * FROM users;`;
+    const selectAllQuery = `SELECT * FROM users ORDER BY user_id ASC;`;
 
     try {
         const databaseResponse = await sendQuery(selectAllQuery);

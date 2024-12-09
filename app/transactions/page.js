@@ -104,6 +104,7 @@ export default function Transactions() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        // Grab seller's userID based on selected listingID
         if (name === "listingID") {
             const selectedListing = listings.find(listing => Number(listing.listing_id) === Number(value));
             setFormData((prevData) => ({
@@ -153,6 +154,7 @@ export default function Transactions() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    transactionID: formData.transactionID,
                     buyerID: formData.buyerID,
                     sellerID: formData.sellerID,
                     listingID: formData.listingID,
@@ -163,8 +165,8 @@ export default function Transactions() {
                 throw new Error('Failed to add transaction');
             }
             const newTransaction = await response.json();
-            setTransactions((prevData) => [...prevData, newTransaction[0]]);
-
+            console.log('New Transaction: ', newTransaction);
+            setTransactions((prevData) => [...prevData, newTransaction]);
         } catch (error) {
             console.error('Error adding transaction:', error);
         }
