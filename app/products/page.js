@@ -59,6 +59,7 @@ export default function Products() {
     const [filterIsOpen, setFilterisOpen] = useState(false)
     const [filterSelectedOption, setFilterSelectedOption] = useState("All")
     const [sizeOptionsForSelectedCategory, setSizeOptionsForSelectedCategory] = useState([])
+    const [filtereredProducts, setFilteredProducts] = useState([])
     const [formData, setFormData] = useState({
         productName: '',
         brand: '',
@@ -89,6 +90,7 @@ export default function Products() {
                 })
 
                 setProducts(data)
+                setFilteredProducts(data)
                 setIsLoading(false)
 
             } catch (error) {
@@ -119,6 +121,12 @@ export default function Products() {
 
     }, [formData.category])
 
+    useEffect(() => {
+
+        setFilteredProducts(filterSelectedOption === 'all' ? products : products.filter((item)=> item.category_name.toLowerCase() === filterSelectedOption))
+
+    }, [filterSelectedOption])
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (formData.mode === 'delete') {
@@ -141,9 +149,7 @@ export default function Products() {
     }
 
     const toggleDropdown = () => setFilterfilterIsOpen(!filterfilterIsOpen)
-    const handleFilter = (category) => {
-        console.log('we will do something here eventually')
-    }
+
 
     const handleAddProduct = () => {
 
@@ -511,15 +517,16 @@ export default function Products() {
                                 className="block w-full px-4 py-2 bg-gray-200 rounded-lg text-black focus:outline-none"
                                 onClick={() => setFilterisOpen(!filterIsOpen)}
                             >
-                                Filter by Category
+                                Category: {filterSelectedOption}
                             </button>
                             {filterIsOpen && (
                                 <div className="absolute mt-2 w-full bg-white shadow-lg rounded-lg z-10">
                                     <ul className="py-2 text-gray-700">
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => handleFilter('shirts')}>Shirts</li>
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => handleFilter('shoes')}>Shoes</li>
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => handleFilter('pants')}>Pants</li>
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => handleFilter('accessories')}>Accessories</li>
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('all')}>all</li>
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('shirts')}>Shirts</li>
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('shoes')}>Shoes</li>
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('pants')}>Pants</li>
+                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('other')}>Other</li>
                                     </ul>
                                 </div>
                             )}
@@ -530,7 +537,7 @@ export default function Products() {
                 {isLoading ? new Array(3).fill(null).map((_, index) => (
                     <ProductLoadingCard key={index} />))
 
-                    : products.map((product, index) => (
+                    : filtereredProducts.map((product, index) => (
                         <div
                             className='w-full'
                             key={index}
