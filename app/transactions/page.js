@@ -165,8 +165,8 @@ export default function Transactions() {
                 throw new Error('Failed to add transaction');
             }
             const newTransaction = await response.json();
-            console.log('New Transaction: ', newTransaction);
-            setTransactions((prevData) => [...prevData, newTransaction]);
+            console.log('New Transaction: ', newTransaction[0][0]);
+            setTransactions((prevData) => [...prevData, newTransaction[0][0]]);
         } catch (error) {
             console.error('Error adding transaction:', error);
         }

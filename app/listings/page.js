@@ -4,6 +4,8 @@ import {FiTrash, FiEdit, FiX, FiPlus} from "react-icons/fi";
 
 export default function Listings() {
     const [listings, setListings] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [users, setUsers] = useState([]);
     const [modalToggle, setModalToggle] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -17,19 +19,41 @@ export default function Listings() {
     });
 
     useEffect(() => {
-        const fetchListings = async () => {
+        const fetchData = async () => {
             try {
-                const response = await fetch('/api/listings');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch listings');
+                const [listingsResponse, productsResponse] = await Promise.all([
+                    fetch('/api/listings'),
+                    fetch('/api/products'),
+                ]);
+
+                if (!listingsResponse.ok || !productsResponse.ok) {
+                    throw new Error('Failed to fetch data');
                 }
-                const { data } = await response.json();
-                setListings(data);
+
+                const listingsData = await listingsResponse.json();
+                const productsData = await productsResponse.json();
+
+                setListings(listingsData.data);
+                setProducts(productsData.data);
+
             } catch (error) {
-                console.error('Error fetching listings:', error);
+                console.error('Error fetching data:', error);
             }
         };
-        fetchListings();
+
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        const getUsers = async () => {
+            fetch('/api/users')
+                .then((response) => response.json())
+                .then((jsonData) => {
+                  setUsers(jsonData);
+                })
+                .catch((error) => console.error('Failed to load users: ', error));
+                }
+        getUsers();
     }, []);
 
     const handleDelete = (listingID) => {
@@ -180,30 +204,43 @@ export default function Listings() {
                 <form onSubmit={isEditing ? handleSaveEdit : handleSaveAdd}>
                     <label className="block text-sm font-medium text-gray-700">
                         Product ID
-                        <input
-                            type="text"
+                        <select
                             name="productID"
                             value={formData.productID}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                        />
+                        >
+                            <option value="" disabled>Select a product</option>
+                            {products.map((product) => (
+                                <option key={product.product_id} value={product.product_id}>
+                                    {product.product_id}
+                                </option>
+                            ))}
+                        </select>
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
                         Seller ID
-                        <input
-                            type="text"
+                        <select
                             name="userID"
                             value={formData.userID}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                        />
+                        >
+                        <option value="" disabled>Select a Seller</option>
+                            {users.map((user) => (
+                                <option key={user.userId} value={user.userId}>
+                                    {user.userId}
+                                </option>
+                            ))}
+                        </select>
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
                         Listing Price
                         <input
                             type="number"
+                            min="0"
                             name="listingPrice"
                             value={formData.listingPrice}
                             onChange={handleChange}

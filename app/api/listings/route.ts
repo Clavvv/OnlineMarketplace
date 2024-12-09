@@ -44,7 +44,7 @@ export async function PUT(request: Request) {
 
     try {
         const databaseResponse = await transactSQL([updateQuery, deleteTransaction]);
-        const updatedListing = databaseResponse[0];
+        const updatedListing = databaseResponse[0][0];
 
         return new Response(JSON.stringify(updatedListing), {
             status: 200,

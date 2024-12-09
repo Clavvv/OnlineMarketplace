@@ -60,9 +60,6 @@ export default function Users() {
   };
 
   const handleAdd = () => {
-    // unsure what the point of maxID is
-    const maxID =
-      users.reduce((max, user) => Math.max(max, parseInt(user.userID, 10)), 0);
 
     setIsAdding(true);
     setIsEditing(false);
@@ -207,6 +204,7 @@ export default function Users() {
             Number of Items Sold
             <input
               type="number"
+              min="0"
               name="numItemsSold"
               value={formData.numItemsSold}
               onChange={handleChange}
@@ -218,6 +216,7 @@ export default function Users() {
             Number of Active Listings
             <input
               type="number"
+              min="0"
               name="numActiveListings"
               value={formData.numActiveListings}
               onChange={handleChange}

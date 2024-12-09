@@ -77,7 +77,6 @@ export async function GET(request: Request) {
             const newObj = convertSnakeToCamelCaseForObject(obj);
             response.push(newObj);
         }
-
         return new Response(JSON.stringify(response), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
