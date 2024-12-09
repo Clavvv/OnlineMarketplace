@@ -4,6 +4,7 @@ import {FiTrash, FiEye, FiEdit, FiX, FiPlus} from "react-icons/fi";
 
 export default function Transactions() {
     const [transactions, setTransactions] = useState([]);
+    const [listings, setListings] = useState([]);
     const [modalToggle, setModalToggle] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -29,6 +30,22 @@ export default function Transactions() {
             }
         };
         fetchTransactions();
+    }, []);
+
+    useEffect(() => {
+        const fetchListings = async () => {
+            try {
+                const response = await fetch('/api/listings');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch listings');
+                }
+                const { data } = await response.json();
+                setListings(data);
+            } catch (error) {
+                console.error('Error fetching listings:', error);
+            }
+        };
+        fetchListings();
     }, []);
 
     const handleDelete = async (transactionID) => {
@@ -66,16 +83,18 @@ export default function Transactions() {
             transactionDate: transaction.transaction_date,
         });
         setIsEditing(true);
+        setIsAdding(false);
         setModalToggle(true);
     };
 
     const handleAdd = () => {
+        const today = new Date().toISOString().split('T')[0];
         setFormData({
             transactionID: '',
             buyerID: '',
             sellerID: '',
             listingID: '',
-            transactionDate: '',
+            transactionDate: today,
         });
         setIsAdding(true);
         setIsEditing(false);
@@ -84,10 +103,19 @@ export default function Transactions() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value
-        }));
+        if (name === "listingID") {
+            const selectedListing = listings.find(listing => Number(listing.listing_id) === Number(value));
+            setFormData((prevData) => ({
+                ...prevData,
+                listingID: value,
+                sellerID: selectedListing ? selectedListing.user_id : '', // Ensure user_id maps to sellerID
+            }));
+        } else {
+            setFormData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
     };
 
     const handleSaveEdit = async (e) => {
@@ -138,10 +166,31 @@ export default function Transactions() {
             }
             const newTransaction = await response.json();
             setTransactions((prevData) => [...prevData, newTransaction[0]]);
+
+            await updateListingStatus(formData.listingID, 'sold');
         } catch (error) {
             console.error('Error adding transaction:', error);
         }
-};
+    };
+
+    const updateListingStatus = async (listingID, status) => {
+        try {
+            const response = await fetch(`/api/listings`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ listingID, status }),
+            });
+            console.log('listing update response: ', response)
+
+            if (!response.ok) {
+                throw new Error('Failed to update listing status');
+            }
+
+            console.log(`Listing ${listingID} status updated to ${status}`);
+        } catch (error) {
+            console.error(`Error updating status for listing ${listingID}:`, error);
+        }
+    };
 
     const transactionModal = (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -157,15 +206,21 @@ export default function Transactions() {
                 </h2>
                 <form onSubmit={isEditing ? handleSaveEdit : handleSaveAdd}>
                     <label className="block text-sm font-medium text-gray-700">
-                        Buyer ID
-                        <input
-                            type="text"
-                            name="buyerID"
-                            value={formData.buyerID}
+                        Listing ID
+                        <select
+                            name="listingID"
+                            value={formData.listingID}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                        />
+                        >
+                            <option value="" disabled>Select a listing</option>
+                            {listings.map((listing) => (
+                                <option key={listing.listing_id} value={listing.listing_id}>
+                                    {listing.listing_id}
+                                </option>
+                            ))}
+                        </select>
                         Seller ID
                         <input
                             type="text"
@@ -173,13 +228,13 @@ export default function Transactions() {
                             value={formData.sellerID}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            required
+                            readOnly
                         />
-                        Listing ID
+                        Buyer ID
                         <input
                             type="text"
-                            name="listingID"
-                            value={formData.listingID}
+                            name="buyerID"
+                            value={formData.buyerID}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
@@ -193,6 +248,7 @@ export default function Transactions() {
                             value={formData.transactionDate}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            readOnly={isAdding}
                             required
                         />
                     </label>
@@ -228,8 +284,8 @@ export default function Transactions() {
                         <th className="px-4 py-2 text-left">Seller ID</th>
                         <th className="px-4 py-2 text-left">Listing ID</th>
                         <th className="px-4 py-2 text-left">Transaction Date</th>
-                        <th className="px-4 py-2 text-left"></th>
-                        <th className="px-4 py-2 text-left"></th>
+                        <th className="px-4 py-2 text-left">Edit</th>
+                        <th className="px-4 py-2 text-left">Delete</th>
                     </tr>
                     </thead>
                     <tbody>

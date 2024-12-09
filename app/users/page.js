@@ -181,10 +181,11 @@ export default function Users() {
             />
           </label>
           <label className="block text-sm font-medium text-gray-700 mt-4">
-            Phone Number
+            Phone Number <small>(format: 123-456-7890)</small>
             <input
-              type="text"
-              name="phoneNumber"
+              type="tel"
+              id="phone"
+              name="phoneNumber" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
               value={formData.phoneNumber}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
@@ -259,8 +260,8 @@ export default function Users() {
               <th className="px-4 py-2 text-left">Feedback Score</th>
               <th className="px-4 py-2 text-left">Number of Items Sold</th>
               <th className="px-4 py-2 text-left">Number of Active Listings</th>
-              <th className="px-4 py-2 text-left"></th>
-              <th className="px-4 py-2 text-left"></th>
+              <th className="px-4 py-2 text-left">Edit</th>
+              <th className="px-4 py-2 text-left">Delete</th>
             </tr>
           </thead>
           <tbody>

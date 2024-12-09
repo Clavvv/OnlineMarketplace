@@ -275,8 +275,8 @@ export default function Listings() {
                             <th className="px-4 py-2 text-left">Listing Price</th>
                             <th className="px-4 py-2 text-left">Status</th>
                             <th className="px-4 py-2 text-left">Condition</th>
-                            <th className="px-4 py-2 text-left"></th>
-                            <th className="px-4 py-2 text-left"></th>
+                            <th className="px-4 py-2 text-left">Edit</th>
+                            <th className="px-4 py-2 text-left">Delete</th>
                         </tr>
                         </thead>
                         <tbody>
