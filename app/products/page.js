@@ -8,7 +8,7 @@ const sizeOptions = {
     shirt: ["XS", "S", "M", "L", "XL", "XXL"],
     shoes: ["5", "6", "7", "8", "9", "10", "11", "12", "13"],
     pants: ["28", "30", "32", "34", "36", "38", "40"]
-  }
+}
 
 
 export default function Products() {
@@ -59,7 +59,6 @@ export default function Products() {
     const [filterIsOpen, setFilterisOpen] = useState(false)
     const [filterSelectedOption, setFilterSelectedOption] = useState("all")
     const [sizeOptionsForSelectedCategory, setSizeOptionsForSelectedCategory] = useState([])
-    const [filtereredProducts, setFilteredProducts] = useState([])
     const [formData, setFormData] = useState({
         productName: '',
         brand: '',
@@ -82,7 +81,7 @@ export default function Products() {
                 }
 
                 let returnedData = await response.json()
-                let data= returnedData.data.map((product) => {
+                let data = returnedData.data.map((product) => {
                     return {
                         ...product,
                         image: '/sample_product_image.png'
@@ -90,7 +89,6 @@ export default function Products() {
                 })
 
                 setProducts(data)
-                setFilteredProducts(data)
                 setIsLoading(false)
 
             } catch (error) {
@@ -107,7 +105,7 @@ export default function Products() {
                 ...prevData,
                 mode: modalToggle
             }))
-    }
+        }
 
     }, [modalToggle])
 
@@ -116,10 +114,11 @@ export default function Products() {
         if (formData.category) {
             const category = formData.category.toLowerCase()
             setSizeOptionsForSelectedCategory(sizeOptions[category] || [])
-            setFormData(prev => ({ ...prev, size: ""}))
+            setFormData(prev => ({ ...prev, size: "" }))
         }
 
     }, [formData.category])
+
 
     useEffect(() => {
 
@@ -145,10 +144,10 @@ export default function Products() {
             handleDeleteProduct()
         } else if (formData.mode === 'create') {
             handleAddProduct()
-    } else if (formData.mode === 'edit'){
-        handleEditProduct()
+        } else if (formData.mode === 'edit') {
+            handleEditProduct()
+        }
     }
-}
 
     const handleChange = (e) => {
 
@@ -179,12 +178,12 @@ export default function Products() {
     const handleAddProduct = () => {
 
         const response = fetch('/api/products', {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
             .then(response => response.json())
             .then(data => {
 
@@ -192,7 +191,7 @@ export default function Products() {
                     ...data[0],
                     image: '/sample_product_image.png'
                 }
-                
+
                 setProducts(prevData => {
                     return [...prevData, newProductWithImage]
                 })
@@ -206,8 +205,8 @@ export default function Products() {
     const handleDeleteProduct = async () => {
 
         let requestJson = {
-                action: formData.mode,
-                product_id: formData.productID
+            action: formData.mode,
+            product_id: formData.productID
         }
 
         const response = fetch('/api/products', {
@@ -221,7 +220,7 @@ export default function Products() {
             if (!response.ok) {
                 throw new Error('failed to delete product')
             }
-            
+
             return response.json()
         }).then(() => {
 
@@ -230,28 +229,24 @@ export default function Products() {
     }
 
     const handleEditProduct = async () => {
-
         const response = await fetch('/api/products', {
             method: 'PUT',
             headers: {
                 'Content-type': 'application/json',
             },
             body: JSON.stringify(formData)
-        })
+        });
 
-        const data = await response.json()
-
+        const data = await response.json();
         const updatedProduct = {
             ...data,
             image: '/sample_product_image.png'
-        }
+        };
 
-        setProducts(prevProducts => [
-            ...prevProducts.map(product =>
-                product.product_id === updatedProduct.product_id ? updatedProduct : product
-            ),
-        ]);
-        setModalToggle('')
+        const updatedProducts = products.map(product =>
+            product.product_id === updatedProduct.product_id ? updatedProduct : product
+        );
+        setProducts(updatedProducts);
     }
 
     const createModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -307,7 +302,7 @@ export default function Products() {
                         onChange={handleChange}
                         className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
                         required
-                    >   
+                    >
                         <option value="" disabled>choose category</option>
                         <option value="shirt">Shirts</option>
                         <option value="shoes">Shoes</option>
@@ -326,7 +321,7 @@ export default function Products() {
                         className="mt-1 mb-5 block w-full p-2 border border-gray-300 rounded-md text-black"
                         required
                         disabled={!formData.category}
-                    >   
+                    >
                         <option value="" disabled>choose a size</option>
                         {sizeOptionsForSelectedCategory.map((size, index) => (
                             <option key={index} value={size}>{size}</option>
@@ -346,7 +341,7 @@ export default function Products() {
                         className="mt-1 mb-5 block w-full p-2 border border-gray-300 rounded-md text-black"
                         required
                         disabled={!formData.size}
-                    >   
+                    >
                         <option value="" disabled>choose a demographic</option>
                         <option value="W">Women</option>
                         <option value="M">Men</option>
@@ -542,42 +537,50 @@ export default function Products() {
                     <FiTrash size={20} />
                 </button>
             </div>
-                <div className="ml-[220px] mt-6">
-                    <div className="relative inline-block">
-                        <div className="relative">
-                            <button
-                                className="block w-full px-4 py-2 bg-gray-200 rounded-lg text-black focus:outline-none"
-                                onClick={() => setFilterisOpen(!filterIsOpen)}
-                            >
-                                Category: {filterSelectedOption}
-                            </button>
-                            {filterIsOpen && (
-                                <div className="absolute mt-2 w-full bg-white shadow-lg rounded-lg z-10">
-                                    <ul className="py-2 text-gray-700">
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('all')}>all</li>
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('shirts')}>Shirts</li>
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('shoes')}>Shoes</li>
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('pants')}>Pants</li>
-                                        <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('other')}>Other</li>
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
+            <div className="ml-[220px] mt-6">
+                <div className="relative inline-block">
+                    <div className="relative">
+                        <button
+                            className="block w-full px-4 py-2 bg-gray-200 rounded-lg text-black focus:outline-none"
+                            onClick={() => setFilterisOpen(!filterIsOpen)}
+                        >
+                            Category: {filterSelectedOption}
+                        </button>
+                        {filterIsOpen && (
+                            <div className="absolute mt-2 w-full bg-white shadow-lg rounded-lg z-10">
+                                <ul className="py-2 text-gray-700">
+                                    <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('all')}>all</li>
+                                    <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('shirts')}>Shirts</li>
+                                    <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('shoes')}>Shoes</li>
+                                    <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('pants')}>Pants</li>
+                                    <li className="px-4 py-2 cursor-pointer hover:bg-gray-300" onClick={() => setFilterSelectedOption('other')}>Other</li>
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </div>
+            </div>
             <div className='grid mt-10 mb-6 ml-56 grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-y-6'>
-                {isLoading ? new Array(3).fill(null).map((_, index) => (
-                    <ProductLoadingCard key={index} />))
-
-                    : filtereredProducts.map((product, index) => (
+                {isLoading
+                    ? new Array(3).fill(null).map((_, index) => (
+                        <ProductLoadingCard key={index} />
+                    ))
+                    : (filterSelectedOption === 'all'
+                        ? products
+                        : products.filter(
+                            (item) => item.category_name.toLowerCase() === filterSelectedOption.toLowerCase()
+                        )
+                    ).map((product) => (
                         <div
                             className='w-full'
-                            key={index}
-                            id = {product.id}
+                            key={product.product_id}
                         >
-                            <ProductCard product={product} />
+                            <ProductCard
+                                product={product}
+                            />
                         </div>
-                    ))}
+                    ))
+                }
             </div>
             {modalToggle === 'create' ? createModal : <></>}
             {modalToggle === 'edit' ? editModal : <></>}

@@ -42,7 +42,6 @@ export default function Home() {
 
   return (
     <div id='btnParent' className= 'flex flex-row h-screen w-screen justify-center'>
-    <button onClick={() => testTransaction()}>Test test</button>
     </div>
   )
 }
