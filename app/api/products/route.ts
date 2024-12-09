@@ -24,7 +24,7 @@ const categoryIDMappings: Record<string, number> = {
 
 export async function GET() {
 
-    let query= `SELECT p.product_id, p.brand, p.size_id, p.product_name, c.category_name, c.demographic
+    let query = `SELECT p.product_id, p.brand, p.size_id, p.product_name, c.category_name, c.demographic
                     FROM products p
                     JOIN categories c on p.category_id = c.category_id;`
     const responseData = await sendQuery(query)
@@ -46,39 +46,30 @@ export async function PUT(request: Request) {
 
     const getCategoryIdByProductIDResponse = await sendQuery(getCategoryIdByProductID)
     const { category_id } = getCategoryIdByProductIDResponse[0]
-    const updateQuery = `
-                        UPDATE products 
-                        SET 
-                        product_name = '${productName}',
-                        brand = '${brand}',
-                        category_id = ${category_id}
-                        WHERE
-                        product_id = ${productID}
-                        RETURNING *;`
 
     const testQuery = `WITH updated_product AS (
-                        UPDATE products
+                        UPDATE products p
                         SET
                         product_name = '${productName}',
                         brand = '${brand}',
                         category_id = ${category_id}
-                        WHERE
+                    WHERE
                         product_id = ${productID}
-                        RETURNING *)
-                        SELECT 
-                        p.product_id,
-                        p.product_name,
-                        p.brand,
-                        p.size_id,
-                        c.category_name,
-                        c.demographic
-                        FROM products p
-                        JOIN categories c on p.category_id = p.category_id;
-                        `
+                    RETURNING *)
+                    SELECT 
+                    p.product_id,
+                    p.product_name,
+                    p.brand,
+                    p.size_id,
+                    c.category_name,
+                    c.demographic
+                    FROM updated_product p
+                    JOIN categories c ON p.category_id = c.category_id;`
 
     try {
         const databaseResponse = await sendQuery(testQuery)
         const updatedProduct = databaseResponse[0]
+        console.log(databaseResponse)
 
         return new Response(JSON.stringify(updatedProduct), {
             status: 200,
