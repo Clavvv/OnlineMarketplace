@@ -65,8 +65,8 @@ export async function POST(request: Request) {
 
     try {
 
-        const insertQuery = `INSERT INTO transactions (buyer_id, seller_id, listing_id, transaction_date)
-                            VALUES ('${buyerID}', '${sellerID}', '${listingID}', '${transactionDate}')
+        const insertQuery = `INSERT INTO transactions (buyer_id, seller_id, listing_id)
+                            VALUES ('${buyerID}', '${sellerID}', '${listingID}')
                             RETURNING *;`
 
         const databaseResponse = await sendQuery(insertQuery)

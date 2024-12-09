@@ -259,8 +259,8 @@ export default function Users() {
               <th className="px-4 py-2 text-left">Feedback Score</th>
               <th className="px-4 py-2 text-left">Number of Items Sold</th>
               <th className="px-4 py-2 text-left">Number of Active Listings</th>
-              <th className="px-4 py-2 text-left"></th>
-              <th className="px-4 py-2 text-left"></th>
+              <th className="px-4 py-2 text-left">Edit</th>
+              <th className="px-4 py-2 text-left">Delete</th>
             </tr>
           </thead>
           <tbody>

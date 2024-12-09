@@ -23,38 +23,64 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+    const { listingID, productID, userID, listingPrice, status, condition } = await request.json();
 
-    const { listingID, productID, userID, listingPrice, status, condition } = await request.json()
+    // If it's a status-only update (adding transaction)
+    if (productID === undefined && userID === undefined && listingPrice === undefined && condition === undefined) {
+        const updateStatusQuery = `
+            UPDATE listings 
+            SET status = '${status}'
+            WHERE listing_id = ${listingID}
+            RETURNING *;`;
 
+        try {
+            const databaseResponse = await sendQuery(updateStatusQuery);
+            const updatedListing = databaseResponse[0];
+
+            return new Response(JSON.stringify(updatedListing), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+        } catch (error) {
+            console.error('Error updating status:', error);
+            return new Response(JSON.stringify({ error: 'Failed to update listing status' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+    }
+
+    // Handle a full update
     const updateQuery = `
-                        UPDATE listings 
-                        SET 
-                        product_id = '${productID}',
-                        user_id = '${userID}',
-                        listing_price = '${listingPrice}',
-                        status = '${status}',
-                        item_condition = '${condition}' 
-                        WHERE
-                        listing_id = ${listingID}
-                        RETURNING *;`
+        UPDATE listings 
+        SET 
+        product_id = '${productID}',
+        user_id = '${userID}',
+        listing_price = '${listingPrice}',
+        status = '${status}',
+        item_condition = '${condition}' 
+        WHERE listing_id = ${listingID}
+        RETURNING *;`;
 
     try {
-        const databaseResponse = await sendQuery(updateQuery)
-        const updatedListing = databaseResponse[0]
+        const databaseResponse = await sendQuery(updateQuery);
+        const updatedListing = databaseResponse[0];
 
         return new Response(JSON.stringify(updatedListing), {
             status: 200,
             headers: {
-                'Content-type': 'application/json'
-            }
-        })
-
-
+                'Content-Type': 'application/json',
+            },
+        });
     } catch (error) {
-        console.error("Error updating listing:", error);
+        console.error('Error updating listing:', error);
+        return new Response(JSON.stringify({ error: 'Failed to update listing' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
     }
-
-    return new Response(JSON.stringify({ 'test': 'not real response' }))
 }
 
 export async function DELETE(request: Request) {

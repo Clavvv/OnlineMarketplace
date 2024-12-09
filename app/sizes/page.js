@@ -249,7 +249,6 @@ export default function Sizes() {
                 <th className="px-4 py-2 text-left">Category ID</th>
                 <th className="px-4 py-2 text-left">Edit</th>
                 <th className="px-4 py-2 text-left">Delete</th>
-                <th className="px-4 py-2 text-left"></th>
               </tr>
             </thead>
             <tbody>
