@@ -2,12 +2,6 @@
 import { useState, useEffect } from 'react';
 import { FiPlus, FiEdit, FiTrash, FiX } from "react-icons/fi"
 
-const sizeOptions = {
-    Shirt: ["XS", "S", "M", "L", "XL", "XXL"],
-    Shoes: ["5", "6", "7", "8", "9", "10", "11", "12", "13"],
-    Pants: ["28", "30", "32", "34", "36", "38", "40"]
-}
-
 export default function Sizes() {
 
     const [sizes, setSizes] = useState([])
@@ -15,7 +9,6 @@ export default function Sizes() {
     const [isEditing, setIsEditing] = useState(false)
     const [isAdding, setIsAdding] = useState(false)
     const [categories, setCategories] = useState([])
-    const [sizeOptionsForSelectedCategory, setSizeOptionsForSelectedCategory] = useState([])
     const [formData, setFormData] = useState({
         sizeID: '',
         size: '',
@@ -215,25 +208,6 @@ export default function Sizes() {
             </h2>
             <form onSubmit={isEditing ? handleSaveEdit : handleSaveAdd}>
 
-                <div className="mb-4">
-                    <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">
-                        Category
-                    </label>
-                    <select
-                        id="categoryName"
-                        name="categoryName"
-                        value={formData.categoryName}
-                        onChange={handleChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
-                        required
-                    >
-                        {/*TODO*/}
-                        <option value='' disabled>choose an option</option>
-                        <option value="Shirts">Shirts</option>
-                        <option value="Shoes">Shoes</option>
-                        <option value="Pants">Pants</option>
-                    </select>
-                </div>
                 <div className="mb-4">
                     <label htmlFor="categoryID" className="block text-sm font-medium text-gray-700">
                         Category ID
