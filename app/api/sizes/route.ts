@@ -27,7 +27,8 @@ export async function GET() {
     // select the sizes which used to belong to that id. They still exist in the database though so you must be careful during later queries
 
     let query = `SELECT * FROM sizes s
-                    JOIN categories c ON s.category_id = c.category_id;`
+                    JOIN categories c ON s.category_id = c.category_id
+                    ORDER BY s.category_id;`
 
     const responseData = await sendQuery(query)
     return new Response(JSON.stringify({ data: responseData }), {
@@ -87,13 +88,14 @@ export async function POST(request: Request) {
 
     try {
 
-        console.log(size, categoryID)
+        console.log(queryData)
 
         const insertQuery = `INSERT INTO sizes (size, category_id)
                             VALUES ('${size}', '${categoryID}')
                             RETURNING *;`
 
         const databaseResponse = await sendQuery(insertQuery)
+        console.log(databaseResponse)
 
         return new Response(JSON.stringify(databaseResponse), {
             status: 200,

@@ -1,5 +1,5 @@
 'use client'
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { FiPlus, FiEdit, FiTrash, FiX } from "react-icons/fi"
 
 export default function Sizes() {
@@ -8,6 +8,7 @@ export default function Sizes() {
     const [modalToggle, setModalToggle] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [isAdding, setIsAdding] = useState(false)
+    const [categories, setCategories] = useState([])
     const [formData, setFormData] = useState({
         sizeID: '',
         size: '',
@@ -33,7 +34,34 @@ export default function Sizes() {
         fetchSizes();
     }, []);
 
+    useEffect(() => {
 
+        if (formData.categoryName) {
+            setSizeOptionsForSelectedCategory(sizeOptions[formData.categoryName] || [])
+            setFormData(prev => ({ ...prev, size: "" }))
+        }
+
+    }, [formData.categoryName])
+
+    useEffect(() => {
+
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('/api/categories');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch categories');
+                }
+                const { data } = await response.json();
+                setCategories(data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+        fetchCategories();
+
+    }, [])
+
+    console.log(sizes)
     const handleChange = (e) => {
         e.preventDefault()
         const { name, value } = e.target
@@ -139,6 +167,8 @@ export default function Sizes() {
         e.preventDefault()
         setModalToggle(false);
 
+        console.log('form data:', formData)
+
         fetch('/api/sizes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -177,42 +207,31 @@ export default function Sizes() {
                 {isEditing ? 'Edit Size' : 'Add New Size'}
             </h2>
             <form onSubmit={isEditing ? handleSaveEdit : handleSaveAdd}>
+
+                <div className="mb-4">
+                    <label htmlFor="categoryID" className="block text-sm font-medium text-gray-700">
+                        Category ID
+                    </label>
+                    <select
+                        id="categoryID"
+                        name="categoryID"
+                        value={formData.categoryID}
+                        onChange={handleChange}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
+                        required
+                    >
+                        {categories.map((category) => (
+                            <option key={category.category_id} value={category.category_id}>
+                                {category.category_id}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div className="mb-4">
                     <label htmlFor="size" className="block text-sm font-medium text-gray-700">
                         Size
                     </label>
-                    <select
-                        id="size"
-                        name="size"
-                        value={formData.size}
-                        onChange={handleChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
-                        required
-                    >
-                        <option value='' disabled>choose an option</option>
-                        <option value="S">Small</option>
-                        <option value="M">Medium</option>
-                        <option value="L">Large</option>
-                    </select>
-                </div>
-                                <div className="mb-4">
-                    <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">
-                        Category
-                    </label>
-                    <select
-                        id="categoryName"
-                        name="categoryName"
-                        value={formData.categoryName}
-                        onChange={handleChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
-                        required
-                    >
-                        {/*TODO*/}
-                        <option value='' disabled>choose an option</option>
-                        <option value="Shirts">Shirts</option>
-                        <option value="Shoes">Shoes</option>
-                        <option value="Pants">Pants</option>
-                    </select>
+                    <input name='size' onChange={handleChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black" type="text" defaultValue={''}></input>
                 </div>
 
                 <div className="flex justify-end">
@@ -230,57 +249,57 @@ export default function Sizes() {
 
     return (
         <div className="flex justify-center mt-8">
-        <div className="overflow-x-auto w-full max-w-4xl">
-        <div className = 'flex flex-row'>
-            <h3>Add Sizing</h3>
-            <button
-                    className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
-                    onClick={(e) => setModalToggle(true)}
-                    title="Add"
-                  >
-                    <FiPlus />
-            </button>
+            <div className="overflow-x-auto w-full max-w-4xl">
+                <div className='flex flex-row'>
+                    <h3>Add Sizing</h3>
+                    <button
+                        className="px-2 py-1 mx-1 text-white rounded hover:bg-green-600"
+                        onClick={(e) => setModalToggle(true)}
+                        title="Add"
+                    >
+                        <FiPlus />
+                    </button>
+                </div>
+                <table className="min-w-full table-auto text-sm">
+                    <thead>
+                        <tr className="bg-gray-300 text-black">
+                            <th className="px-4 py-2 text-left">Size ID</th>
+                            <th className="px-4 py-2 text-left">Size</th>
+                            <th className="px-4 py-2 text-left">Category ID</th>
+                            <th className="px-4 py-2 text-left">Edit</th>
+                            <th className="px-4 py-2 text-left">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sizes.map((size) => (
+                            <tr key={size.size_id} className="border-b">
+                                <td className="px-4 py-2">{size.size_id}</td>
+                                <td className="px-4 py-2">{size.size}</td>
+                                <td className="px-4 py-2">{size.category_id}</td>
+                                <td>
+                                    <button
+                                        className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
+                                        onClick={() => handleEdit(size)}
+                                        title="Edit"
+                                    >
+                                        <FiEdit />
+                                    </button>
+                                </td>
+                                <td>
+                                    <button
+                                        className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
+                                        onClick={() => handleDelete(size.size_id)}
+                                        title="Delete"
+                                    >
+                                        <FiTrash />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {modalToggle && newSizeModal}
         </div>
-          <table className="min-w-full table-auto text-sm">
-            <thead>
-              <tr className="bg-gray-300 text-black">
-                <th className="px-4 py-2 text-left">Size ID</th>
-                <th className="px-4 py-2 text-left">Size</th>
-                <th className="px-4 py-2 text-left">Category ID</th>
-                <th className="px-4 py-2 text-left">Edit</th>
-                <th className="px-4 py-2 text-left">Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sizes.map((size) => (
-                <tr key={size.size_id} className="border-b">
-                  <td className="px-4 py-2">{size.size_id}</td>
-                  <td className="px-4 py-2">{size.size}</td>
-                  <td className="px-4 py-2">{size.category_id}</td>
-                  <td>
-                  <button
-                    className="px-2 py-1 mx-1 text-white rounded hover:bg-yellow-600"
-                    onClick={() => handleEdit(size)}
-                    title="Edit"
-                  >
-                    <FiEdit />
-                  </button>
-                  </td>
-                  <td>
-                  <button
-                    className="px-2 py-1 mx-1 text-white rounded hover:bg-red-600"
-                    onClick={() => handleDelete(size.size_id)}
-                    title="Delete"
-                  >
-                    <FiTrash />
-                  </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {modalToggle && newSizeModal}
-      </div>
     )
 }
