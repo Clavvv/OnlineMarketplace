@@ -193,6 +193,8 @@ export default function Products() {
 
             setProducts(prevProducts => prevProducts.filter(product => product.product_id != formData.productID))
         })
+
+        setModalToggle('')
     }
 
     const handleEditProduct = async () => {
@@ -214,6 +216,7 @@ export default function Products() {
             product.product_id === updatedProduct.product_id ? updatedProduct : product
         );
         setProducts(updatedProducts);
+        setModalToggle('')
     }
 
     const createModal = <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
