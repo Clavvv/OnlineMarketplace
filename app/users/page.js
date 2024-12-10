@@ -55,12 +55,21 @@ export default function Users() {
 
   const handleEdit = (user) => {
     setFormData(user);
+    setIsAdding(false);
     setIsEditing(true);
     setModalToggle(true);
   };
 
   const handleAdd = () => {
-
+    setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            phoneNumber: '',
+            feedbackScore: '',
+            numItemsSold: '',
+            numActiveListings: '',
+        });
     setIsAdding(true);
     setIsEditing(false);
     setModalToggle(true);

@@ -5,6 +5,7 @@ import {FiTrash, FiEye, FiEdit, FiX, FiPlus} from "react-icons/fi";
 export default function Transactions() {
     const [transactions, setTransactions] = useState([]);
     const [listings, setListings] = useState([]);
+    const [users, setUsers] = useState([]);
     const [modalToggle, setModalToggle] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -46,6 +47,18 @@ export default function Transactions() {
             }
         };
         fetchListings();
+    }, []);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            fetch('/api/users')
+                .then((response) => response.json())
+                .then((jsonData) => {
+                  setUsers(jsonData);
+                })
+                .catch((error) => console.error('Failed to load users: ', error));
+                }
+        fetchUsers();
     }, []);
 
     const handleDelete = async (transaction) => {
@@ -211,17 +224,38 @@ export default function Transactions() {
                             readOnly
                         />
                         Buyer ID
-                        <input
-                            type="text"
+                        <select
                             name="buyerID"
                             value={formData.buyerID}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                        />
+                        >
+                        <option value="" disabled>Select a Buyer</option>
+                            {users
+                                .filter(user => user.userId !== formData.sellerID) // Exclude sellerID
+                                .map(user => (
+                                    <option key={user.userId} value={user.userId}>
+                                        {user.userId}
+                                    </option>
+                                ))}
+                        </select>
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
-                        Transaction Date
+                        <div className="flex items-center space-x-2">
+                            <span>Transaction Date</span>
+                            {isAdding && (
+                                <div
+                                    className="group relative flex items-center justify-center w-4 h-4 bg-gray-300 text-gray-800 rounded-full cursor-pointer text-xs">
+                                    ?
+                                    {/* TOOLTIP */}
+                                    <div
+                                        className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 w-32 text-center">
+                                        Today's Date
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <input
                             type="date"
                             name="transactionDate"
