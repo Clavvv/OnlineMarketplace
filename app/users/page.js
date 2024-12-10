@@ -55,15 +55,21 @@ export default function Users() {
 
   const handleEdit = (user) => {
     setFormData(user);
+    setIsAdding(false);
     setIsEditing(true);
     setModalToggle(true);
   };
 
   const handleAdd = () => {
-    // unsure what the point of maxID is
-    const maxID =
-      users.reduce((max, user) => Math.max(max, parseInt(user.userID, 10)), 0);
-
+    setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            phoneNumber: '',
+            feedbackScore: '',
+            numItemsSold: '',
+            numActiveListings: '',
+        });
     setIsAdding(true);
     setIsEditing(false);
     setModalToggle(true);
@@ -207,6 +213,7 @@ export default function Users() {
             Number of Items Sold
             <input
               type="number"
+              min="0"
               name="numItemsSold"
               value={formData.numItemsSold}
               onChange={handleChange}
@@ -218,6 +225,7 @@ export default function Users() {
             Number of Active Listings
             <input
               type="number"
+              min="0"
               name="numActiveListings"
               value={formData.numActiveListings}
               onChange={handleChange}

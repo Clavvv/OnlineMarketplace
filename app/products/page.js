@@ -119,6 +119,19 @@ export default function Products() {
 
     }, [formData.category])
 
+
+    const resetFormData = () => {
+        setFormData({
+            productName: '',
+            brand: '',
+            category: '',
+            productID: '',
+            mode: '',
+            size: '',
+            demographic: '',
+        });
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (formData.mode === 'delete') {
@@ -131,13 +144,27 @@ export default function Products() {
     }
 
     const handleChange = (e) => {
-        e.preventDefault()
+
         const { name, value } = e.target
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value
-        }))
-    }
+
+        if (name === "productID") {
+            const selectedProduct = products.find(product => Number(product.product_id)=== Number(value));
+            if (selectedProduct) {
+                setFormData(prevData => ({
+                    ...prevData,
+                    productID: value,
+                    productName: selectedProduct.product_name,
+                    brand: selectedProduct.brand,
+                    category: selectedProduct.category,
+                }));
+            }
+        } else {
+            setFormData(prevData => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
+    };
 
     const toggleDropdown = () => setFilterfilterIsOpen(!filterfilterIsOpen)
 
@@ -342,35 +369,35 @@ export default function Products() {
                 Edit Existing Product
             </h2>
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="productID" className="block text-sm font-medium text-gray-700">
-                        Product ID
-                    </label>
-                    <input
-                        type="text"
-                        id="productID"
+                <label htmlFor="productID" className="block text-sm font-medium text-gray-700">
+                    Product ID
+                    <select
                         name="productID"
                         value={formData.productID}
                         onChange={handleChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                         required
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="productName" className="block text-sm font-medium text-gray-700">
+                    >
+                        <option value="" disabled>Select a product</option>
+                        {products.map((product) => (
+                            <option key={product.product_id} value={product.product_id}>
+                                {product.product_id}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="mb-4">
                         Product Name
-                    </label>
-                    <input
-                        type="text"
-                        id="productName"
-                        name="productName"
-                        value={formData.productName}
-                        onChange={handleChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
-                        required
-                    />
-                </div>
-
+                        <input
+                            type="text"
+                            id="productName"
+                            name="productName"
+                            value={formData.productName}
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
+                            required
+                        />
+                    </div>
+                </label>
                 <div className="mb-4">
                     <label htmlFor="brand" className="block text-sm font-medium text-gray-700">
                         Brand
@@ -425,27 +452,27 @@ export default function Products() {
                 <FiX />
             </button>
             <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
-                Edit Existing Product
+                Delete Existing Product
             </h2>
             <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="productID" className="block text-sm font-medium text-gray-700">
-                        Product ID
-                    </label>
-                    <input
-                        type="text"
-                        id="productID"
-                        name="productID"
-                        value={formData.productID}
-                        onChange={handleChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
-                        required
-                    />
-                </div>
+                <label htmlFor="productID" className="block text-sm font-medium text-gray-700">
+                    Product ID
+                <select
+                    name="productID"
+                    value={formData.productID}
+                    onChange={handleChange}
+                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    required
+                >
+                    <option value="" disabled>Select a product</option>
+                    {products.map((product) => (
+                        <option key={product.product_id} value={product.product_id}>
+                            {product.product_id}
+                        </option>
+                    ))}
+                </select>
                 <div className="mb-4">
-                    <label htmlFor="productName" className="block text-sm font-medium text-gray-700">
                         Product Name
-                    </label>
                     <input
                         type="text"
                         id="productName"
@@ -453,9 +480,10 @@ export default function Products() {
                         value={formData.productName}
                         onChange={handleChange}
                         className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black"
-                        required
+                        readOnly
                     />
                 </div>
+                </label>
                 <div className="flex justify-end">
                     <button
                         type="submit"
@@ -475,21 +503,30 @@ export default function Products() {
                 <button
                     className='flex items-center justify-center w-10 h-10 mx-2 rounded-lg text-white hover:bg-green-600 transition transform hover:scale-105'
                     title='Create product'
-                    onClick={(e) => setModalToggle('create')}
+                    onClick={(e) => {
+                        resetFormData();
+                        setModalToggle('create');
+                    }}
                 >
                     <FiPlus size={20} />
                 </button>
                 <button
                     className='flex items-center justify-center w-10 h-10 mx-2 rounded-lg text-white hover:bg-yellow-500 transition transform hover:scale-105'
                     title='Edit product'
-                    onClick={(e) => setModalToggle('edit')}
+                    onClick={(e) => {
+                        resetFormData();
+                        setModalToggle('edit');
+                    }}
                 >
                     <FiEdit size={20} />
                 </button>
                 <button
                     className='flex items-center justify-center w-10 h-10 mx-2 rounded-lg text-white hover:bg-red-600 transition transform hover:scale-105'
                     title='Delete account'
-                    onClick={(e) => setModalToggle('delete')}
+                    onClick={(e) => {
+                        resetFormData();
+                        setModalToggle('delete');
+                    }}
                 >
                     <FiTrash size={20} />
                 </button>

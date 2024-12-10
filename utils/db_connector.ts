@@ -18,21 +18,9 @@ export async function sendQuery(query:string) {
     return response
 }
 
-export async function sendTransaction(queries:string[]){
+export async function transactSQL(queries:string[]){
 
     const connString = process.env.DATABASE_URL
-    /*const input = [
-        `INSERT INTO transactions 
-          (buyer_id, seller_id, listing_id)
-        VALUES 
-          ('1', '4', '40')
-        RETURNING *;`,
-      
-        `UPDATE listings
-          SET status = 'sold'
-        WHERE listing_id = 40;`
-      ]*/
-
 
     if (!connString) {
         throw new Error('unable to connect to the database')
@@ -41,18 +29,23 @@ export async function sendTransaction(queries:string[]){
     console.log('handling transaction: ', queries)
     const sql = neon(connString)
 
+    let results = []; // Variable to store the result of the INSERT query
+
     try {
-
-        await sql('BEGIN')
-        for (let query of queries){
-            console.log(await sql(query))
+        await sql('BEGIN');
+        for (let query of queries) {
+            const result = await sql(query);
+            // Check if this is the INSERT query and capture its result
+            if (query.trim().toUpperCase().includes('RETURNING')) {
+                results.push(result);
+            }
         }
-        await sql('COMMIT')
-        return 'transaction complete'
-    } catch (error){
-        console.log('TRANSACTION FAILED...ROLLING BACK: ', error)
-        await sql('ROLLBACK')
-        return;
+        await sql('COMMIT');
+        // Return the result of the INSERT query
+        return results;
+    } catch (error) {
+        console.log('TRANSACTION FAILED...ROLLING BACK: ', error);
+        await sql('ROLLBACK');
+        throw error;
     }
-
 }

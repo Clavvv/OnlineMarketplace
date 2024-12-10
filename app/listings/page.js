@@ -4,6 +4,8 @@ import {FiTrash, FiEdit, FiX, FiPlus} from "react-icons/fi";
 
 export default function Listings() {
     const [listings, setListings] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [users, setUsers] = useState([]);
     const [modalToggle, setModalToggle] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -17,19 +19,41 @@ export default function Listings() {
     });
 
     useEffect(() => {
-        const fetchListings = async () => {
+        const fetchData = async () => {
             try {
-                const response = await fetch('/api/listings');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch listings');
+                const [listingsResponse, productsResponse] = await Promise.all([
+                    fetch('/api/listings'),
+                    fetch('/api/products'),
+                ]);
+
+                if (!listingsResponse.ok || !productsResponse.ok) {
+                    throw new Error('Failed to fetch data');
                 }
-                const { data } = await response.json();
-                setListings(data);
+
+                const listingsData = await listingsResponse.json();
+                const productsData = await productsResponse.json();
+
+                setListings(listingsData.data);
+                setProducts(productsData.data);
+
             } catch (error) {
-                console.error('Error fetching listings:', error);
+                console.error('Error fetching data:', error);
             }
         };
-        fetchListings();
+
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        const getUsers = async () => {
+            fetch('/api/users')
+                .then((response) => response.json())
+                .then((jsonData) => {
+                  setUsers(jsonData);
+                })
+                .catch((error) => console.error('Failed to load users: ', error));
+                }
+        getUsers();
     }, []);
 
     const handleDelete = (listingID) => {
@@ -71,6 +95,7 @@ export default function Listings() {
             status: listing.status,
             condition: listing.item_condition,
         });
+        setIsAdding(false);
         setIsEditing(true);
         setModalToggle(true);
     };
@@ -179,30 +204,44 @@ export default function Listings() {
                 <form onSubmit={isEditing ? handleSaveEdit : handleSaveAdd}>
                     <label className="block text-sm font-medium text-gray-700">
                         Product ID
-                        <input
-                            type="text"
+                        <select
                             name="productID"
                             value={formData.productID}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                        />
+                        >
+                            <option value="" disabled>Select a product</option>
+                            {products.map((product) => (
+                                <option key={product.product_id} value={product.product_id}>
+                                    {product.product_id}
+                                </option>
+                            ))}
+                        </select>
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
-                        User ID
-                        <input
-                            type="text"
+                        Seller ID
+                        <select
                             name="userID"
                             value={formData.userID}
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
-                        />
+                        >
+                        <option value="" disabled>Select a Seller</option>
+                            {users.map((user) => (
+                                <option key={user.userId} value={user.userId}>
+                                    {user.userId}
+                                </option>
+                            ))}
+                        </select>
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
                         Listing Price
                         <input
                             type="number"
+                            min="0"
+                            step="0.01"
                             name="listingPrice"
                             value={formData.listingPrice}
                             onChange={handleChange}
@@ -211,7 +250,20 @@ export default function Listings() {
                         />
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
-                        Status
+                        <div className="flex items-center space-x-1">
+                            <span>Status</span>
+                            {isEditing && (
+                                <div
+                                className="group relative flex items-center justify-center w-4 h-4 bg-gray-300 text-gray-800 rounded-full cursor-pointer text-xs">
+                                ?
+                                {/* TOOLTIP */}
+                                    <div
+                                        className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 w-40 text-center">
+                                        Selecting &quot;Active&quot; will delete any existing transactions associated with this listing.
+                                    </div>
+                                </div>
+                                )}
+                        </div>
                         <select
                             name="status"
                             value={formData.status}
@@ -220,10 +272,12 @@ export default function Listings() {
                             required
                         >
                             <option value="" disabled>Select Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="sold">Sold</option>
-                            <option value="pending">Pending</option>
+                            {formData.status === 'Sold' && (
+                                <option value="Sold" disabled>Sold</option>
+                            )}
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Pending">Pending</option>
                         </select>
                     </label>
                     <label className="block text-sm font-medium text-gray-700 mt-4">
@@ -236,9 +290,9 @@ export default function Listings() {
                             required
                         >
                             <option value="" disabled>Select Condition</option>
-                            <option value="new">New</option>
-                            <option value="like new">Like New</option>
-                            <option value="used">Used</option>
+                            <option value="New">New</option>
+                            <option value="Like New">Like New</option>
+                            <option value="Used">Used</option>
                         </select>
                     </label>
                     <button
@@ -271,7 +325,7 @@ export default function Listings() {
                         <tr className="bg-gray-300 text-black">
                             <th className="px-4 py-2 text-left">Listing ID</th>
                             <th className="px-4 py-2 text-left">Product ID</th>
-                            <th className="px-4 py-2 text-left">User ID</th>
+                            <th className="px-4 py-2 text-left">Seller ID</th>
                             <th className="px-4 py-2 text-left">Listing Price</th>
                             <th className="px-4 py-2 text-left">Status</th>
                             <th className="px-4 py-2 text-left">Condition</th>

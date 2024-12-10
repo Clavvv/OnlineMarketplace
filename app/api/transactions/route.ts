@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sendQuery } from "../../../utils/db_connector"
+import {sendQuery, transactSQL} from "../../../utils/db_connector"
 
 export async function GET() {
 
@@ -48,8 +48,19 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     const queryData = await request.json()
-    let query = `DELETE FROM transactions WHERE transaction_id = ${queryData.transaction_id}`
-    const databaseResponse = await sendQuery(query)
+    console.log(queryData)
+    const { transactionID, listingID } = queryData
+
+    const deleteTransaction = `DELETE FROM transactions WHERE transaction_id = ${transactionID}`
+
+    const markListingAvail = `UPDATE listings
+                              SET
+                                  status = 'Active'
+                              WHERE 
+                                  listing_id = ${listingID};`
+
+
+    const databaseResponse = await transactSQL([deleteTransaction, markListingAvail])
 
     return new Response(JSON.stringify({ data: databaseResponse }), {
         status: 200,
@@ -65,11 +76,31 @@ export async function POST(request: Request) {
 
     try {
 
-        const insertQuery = `INSERT INTO transactions (buyer_id, seller_id, listing_id)
-                            VALUES ('${buyerID}', '${sellerID}', '${listingID}')
-                            RETURNING *;`
+        const insertTransaction = `INSERT INTO transactions (buyer_id, seller_id, listing_id)
+                                   VALUES ('${buyerID}', '${sellerID}', '${listingID}')
+                                   RETURNING *;`
 
-        const databaseResponse = await sendQuery(insertQuery)
+        const markListingSold = `UPDATE listings
+                                 SET 
+                                    status = 'Sold'
+                                 WHERE 
+                                     listing_id = ${listingID};`
+
+        const insertInPTtable = `INSERT INTO product_transactions (transaction_id, product_id)
+                                 SELECT 
+                                    t.transaction_id, 
+                                    l.product_id
+                                 FROM transactions t
+                                 JOIN listings l 
+                                 ON 
+                                     t.listing_id = l.listing_id
+                                 WHERE 
+                                     t.listing_id = ${listingID}
+                                 ORDER BY 
+                                     t.transaction_id DESC
+                                 LIMIT 1;`
+
+        const databaseResponse = await transactSQL([insertTransaction, markListingSold, insertInPTtable])
         console.log(databaseResponse)
 
         return new Response(JSON.stringify(databaseResponse), {

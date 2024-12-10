@@ -3,7 +3,12 @@ import { sendQuery } from "../../../utils/db_connector"
 
 export async function GET() {
 
-    let query = `SELECT * FROM product_transactions ORDER BY product_transaction_id ASC;`
+    let query = `SELECT *
+                        FROM product_transactions pt
+                        JOIN transactions t ON pt.transaction_id = t.transaction_id
+                        JOIN products p ON pt.product_id = p.product_id
+                        WHERE t.transaction_id IS NOT NULL
+                        ORDER BY pt.product_transaction_id ASC;`
     const responseData = await sendQuery(query)
     return new Response(JSON.stringify({ data: responseData }), {
         status: 200,
