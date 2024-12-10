@@ -231,7 +231,7 @@ export default function Sizes() {
                     <label htmlFor="size" className="block text-sm font-medium text-gray-700">
                         Size
                     </label>
-                    <input className='text-black' type="text" defaultValue={'input size'}></input>
+                    <input name='size' onChange={handleChange} className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-black" type="text" defaultValue={''}></input>
                 </div>
 
                 <div className="flex justify-end">
