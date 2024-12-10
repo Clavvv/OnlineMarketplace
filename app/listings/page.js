@@ -259,7 +259,7 @@ export default function Listings() {
                                 {/* TOOLTIP */}
                                     <div
                                         className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 w-40 text-center">
-                                        Selecting "Active" will delete any existing transactions associated with this listing.
+                                        Selecting &quot;Active&quot; will delete any existing transactions associated with this listing.
                                     </div>
                                 </div>
                                 )}
