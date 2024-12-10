@@ -120,12 +120,6 @@ export default function Products() {
     }, [formData.category])
 
 
-    useEffect(() => {
-
-        setFilteredProducts(filterSelectedOption === 'all' ? products : products.filter(item => item.category_name.toLowerCase() === filterSelectedOption))
-
-    }, [filterSelectedOption, products])
-
     const resetFormData = () => {
         setFormData({
             productName: '',
